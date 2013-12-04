@@ -62,7 +62,7 @@
      ((eq? tag 'italic-system-font-of-size) (string-append "[" type " italicSystemFontOfSize:" (number->string (cadr view)) "]")))))
 
 (define the-resource-types
-  '(font system-font-of-size bold-system-font-of-size italic-system-font-of-size image hsba-color rgba-color))
+  '(font system-font-of-size bold-system-font-of-size italic-system-font-of-size image-named hsba-color rgba-color))
 
 (define the-type-definitions ; (list (cons view-type (cons type-string init-fun)))
   (list (cons 'view (cons "UIView" generate-normal-init))
@@ -77,7 +77,8 @@
         (cons 'info-light-button (cons "UIButton" generate-button-init))
         (cons 'info-dark-button (cons "UIButton" generate-button-init))
         (cons 'contact-add-button (cons "UIButton" generate-button-init))
-        (cons 'image (cons "UIImageView" generate-normal-init))))
+        (cons 'image (cons "UIImageView" generate-normal-init))
+        (cons 'slider (cons "UISlider" generate-normal-init))))
 
 (define (type-definition-type definition)
   (car definition))
@@ -120,6 +121,9 @@
     (if ref
         (list 'image attrs)
         (error "Missing image" attrs))))
+
+(define (slider attrs)
+  (list 'slider attrs))
 
 (define (localized key default)
   (if (and (string? key) (string? default))
@@ -268,6 +272,7 @@
         (list 'info-dark-button info-dark-button)
         (list 'contact-add-button contact-add-button)
         (list 'image image)
+        (list 'slider slider)
         (list 'localized localized)
         (list 'hsba-color hsba-color)
         (list 'rgba-color rgba-color)
@@ -358,7 +363,8 @@
         (cons 'info-light-button the-button-attribute-generators)
         (cons 'info-dark-button the-button-attribute-generators)
         (cons 'contact-add-button the-button-attribute-generators)
-        (cons 'image the-image-attribute-generators)))
+        (cons 'image the-image-attribute-generators)
+        (cons 'slider the-slider-attribute-generators)))
 
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))

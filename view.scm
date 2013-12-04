@@ -15,7 +15,7 @@
 
 (define (generate-float var attr value)
   (if (number? value)
-      (string-append var "." attr " = " (number->string value))
+      (string-append var "." attr " = " (number->string value) ";")
       (invalid-data-type-error var attr "number" value)))
 
 (define (generate-number var attr value)
@@ -43,6 +43,16 @@
 
 (define (generate-assign-image var attr value)
   (string-append var "." attr " = " (generate-image-named value) ";"))
+
+(define (generate-set-image-for-state var fun value)
+  (if (and (pair? value) (list? (car value)) (symbol? (cdr value)))
+      (let ((image (car value))
+            (state (car value))
+            (ref (lookup-variable-by-value-ignoring-root value)))
+        (if ref
+            (string-append "[" var " " fun ":" value " forState:" (generate-control-state state) "];")
+            (string-append "[" var " " fun ":" (generate-image-named image) " forState:" (generate-control-state state) "];")))
+      (error (string-append "Invalid data type for [" var " " fun ":forState:]") value)))
 
 (define (generate-localized value)
   (string-append "NSLocalizedString(@\"" (localized-key value) "\", @\"" (localized-default value) "\")"))
@@ -114,6 +124,16 @@
 
 (define (generate-assign-color var attr color)
   (string-append var "." attr " = " (generate-color color) ";"))
+
+(define (generate-set-color-for-state var fun value)
+  (if (and (pair? value) (symbol? (car value)) (symbol? (cdr value)))
+      (let ((color (car value))
+            (state (car value))
+            (ref (lookup-variable-by-value-ignoring-root value)))
+        (if ref
+            (string-append "[" var " " fun ":" ref " forState:" (generate-control-state state) "];")
+            (string-append "[" var " " fun ":" (generate-color color) " forState:" (generate-control-state state) "];")))
+      (error (string-append "Invalid data type for [" var " " fun ":forState:]") value)))
 
 (define (generate-background-color var value)
   (display (generate-assign-color var "backgroundColor" value))
@@ -386,20 +406,12 @@
       (error (string-append "Invalid data type for [" var " setTitle:forState:]") value)))
 
 (define (generate-title-color-for-state var value)
-  (if (and (pair? value) (symbol? (car value)) (symbol? (cdr value)))
-      (let ((color (car value))
-            (state (car value)))
-        (display (string-append "[" var " setTitleColor:" (generate-color color) " forState:" (generate-control-state state) "];"))
-        (newline))
-      (error (string-append "Invalid data type for [" var " setTitleColor:forState:]") value)))
+  (display (generate-set-color-for-state var "setTitleColor" value))
+  (newline))
 
 (define (generate-title-shadow-color-for-state var value)
-  (if (and (pair? value) (symbol? (car value)) (symbol? (cdr value)))
-      (let ((color (car value))
-            (state (car value)))
-        (display (string-append "[" var " setTitleShadowColor:" (generate-color color) " forState:" (generate-control-state state) "];"))
-        (newline))
-      (error (string-append "Invalid data type for [" var " setTitleShadowColor:forState:]") value)))
+  (display (generate-set-color-for-state var "setTitleShadowColor" value))
+  (newline))
 
 (define (generate-adjusts-image-when-highlighted var value)
   (display (generate-bool var "adjustsImageWhenHighlighted" value))
@@ -414,32 +426,12 @@
   (newline))
 
 (define (generate-background-image-for-state var value)
-  (if (and (pair? value) (list? (car value)) (symbol? (cdr value)))
-      (let ((image (car value))
-            (state (car value)))
-        (let ((ref (lookup-variable-by-value-ignoring-root value)))
-          (if ref
-              (begin
-                (display (string-append "[" var " setBackgroundIamge:" ref " forState:" (generate-control-state state) "];"))
-                (newline))
-              (begin
-                (display (string-append "[" var " setBackgroundIamge:" (generate-image-named image) " forState:" (generate-control-state state) "];"))
-                (newline)))))
-      (error (string-append "Invalid data type for [" var " setBackgroundImage:forState:]") value)))
+  (display (generate-set-image-for-state var "setBackgroundImage" value))
+  (newline))
 
 (define (generate-image-for-state var value)
-  (if (and (pair? value) (list? (car value)) (symbol? (cdr value)))
-      (let ((image (car value))
-            (state (car value)))
-        (let ((ref (lookup-variable-by-value-ignoring-root value)))
-          (if ref
-              (begin
-                (display (string-append "[" var " setIamge:" value " forState:" (generate-control-state state) "];"))
-                (newline))
-              (begin
-                (display (string-append "[" var " setIamge:" (generate-image-named image) " forState:" (generate-control-state state) "];"))
-                (newline)))))
-      (error (string-append "Invalid data type for [" var " setImage:forState:]") value)))
+  (display (generate-set-image-for-state var "setImage" value))
+  (newline))
 
 (define (generate-content-edge-insets var value)
   (display (generate-edge-insets var "contentEdgeInsets" value))
@@ -503,6 +495,54 @@
 
 (define (generate-tint-color var value)
   (display (generate-assign-color var "tintColor" value))
+  (newline))
+
+(define (generate-value var value)
+  (display (generate-number var "value" value))
+  (newline))
+
+(define (generate-minimum-value var value)
+  (display (generate-number var "minimumValue" value))
+  (newline))
+
+(define (generate-maximum-value var value)
+  (display (generate-number var "maximumValue" value))
+  (newline))
+
+(define (generate-continuous var value)
+  (display (generate-bool var "continuous" value))
+  (newline))
+
+(define (generate-minimum-value-image var value)
+  (display (generate-assign-image var "minimumValueImage" value))
+  (newline))
+
+(define (generate-maximum-value-image var value)
+  (display (generate-assign-image var "maximumValueImage" value))
+  (newline))
+
+(define (generate-minimum-track-tint-color var value)
+  (display (generate-assign-color var "minimumTrackTintColor" value))
+  (newline))
+
+(define (generate-minimum-track-image-for-state var value)
+  (display (generate-set-image-for-state var "setMinimumTrackImage" value))
+  (newline))
+
+(define (generate-maximum-track-tint-color var value)
+  (display (generate-assign-color var "maximumTrackTintColor" value))
+  (newline))
+
+(define (generate-maximum-track-image-for-state var value)
+  (display (generate-set-image-for-state var "setMaximumTrackImage" value))
+  (newline))
+
+(define (generate-thumb-tint-color var value)
+  (display (generate-assign-color var "thumbTintColor" value))
+  (newline))
+
+(define (generate-thumb-image-for-state var value)
+  (display (generate-set-image-for-state var "setThumbImage" value))
   (newline))
 
 (define the-view-attribute-generators
@@ -571,3 +611,19 @@
         (cons 'user-interaction-enabled generate-interaction-enabled)
         (cons 'highlighted generate-highlighted)
         (cons 'tint-color generate-tint-color)))
+
+(define the-slider-attribute-generators
+  (append the-view-attribute-generators
+          the-control-attribute-generators
+          (list (cons 'value generate-value)
+                (cons 'minimum-value generate-minimum-value)
+                (cons 'maximum-value generate-maximum-value)
+                (cons 'continuous generate-continuous)
+                (cons 'minimum-value-image generate-minimum-value-image)
+                (cons 'maximum-value-image generate-maximum-value-image)
+                (cons 'minimum-track-tint-color generate-minimum-track-tint-color)
+                (cons 'minimum-track-image-for-state generate-minimum-track-image-for-state)
+                (cons 'maximum-track-tint-color generate-maximum-track-tint-color)
+                (cons 'maximum-track-image-for-state generate-maximum-track-image-for-state)
+                (cons 'thumb-tint-color generate-thumb-tint-color)
+                (cons 'thumb-image-for-state generate-thumb-image-for-state))))
