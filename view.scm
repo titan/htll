@@ -6,7 +6,14 @@
 (define (invalid-data-type-error var attr want got)
   (error "Invalid data type for " (string->symbol (string-append var "." attr)) "want" want "got" got))
 
-(define (generate-bool var attr value)
+(define (fake-generate var value) 'ok)
+
+(define (generate-bool value)
+  (if (boolean? value)
+      (if value "YES" "NO")
+      (error "Invalid boolean type" value)))
+
+(define (generate-assign-bool var attr value)
   (if (boolean? value)
       (if value
           (string-append var "." attr " = YES;")
@@ -21,15 +28,22 @@
 (define (generate-number var attr value)
   (generate-float var attr value))
 
-(define (generate-size var attr value)
+(define (generate-size value)
   (if (and (custom-value? value) (= (length value) 3) (eq? 'size (car value)) (number? (cadr value)) (number? (caddr value)))
-      (string-append var "." attr " = (CGSize) {" (cadr value) ", " (caddr value) "};")
-      (invalid-data-type-error var attr "size" value)))
+      (string-append "(CGSize) {" (cadr value) ", " (caddr value) "}")
+      (error "Invalid size type" value)))
 
 (define (generate-rect var attr value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'rect (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
       (string-append var "." attr " = (CGRect) {" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) "};")
       (invalid-data-type-error var attr "rect" value)))
+
+(define (generate-offset value)
+  (if (and (custom-value? value) (= (length value) 3) (eq? 'offset (car value) (number? (cadr value)) (number? (caddr value))))
+      (let ((h (number->string (cadr value)))
+            (v (number->string (caddr value))))
+        (string-append "UIOffsetMake(" h ", " v ")"))
+      (error "Invalid offset type" value)))
 
 (define (generate-edge-insets var attr value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
@@ -41,17 +55,22 @@
       (string-append "[UIImage imageNamed:" (generate-string (cadr value)) "]")
       (error "Invalid image type" value)))
 
+(define (generate-image-or-ref value)
+  (if (and (custom-value? value) (eq? 'image-named (car value)))
+      (let ((ref (lookup-variable-by-value-ignoring-root value)))
+        (if ref
+            (symbol->string ref)
+            (generate-image-named value)))
+      (error "Invalid image type" value)))
+
 (define (generate-assign-image var attr value)
   (string-append var "." attr " = " (generate-image-named value) ";"))
 
 (define (generate-set-image-for-state var fun value)
   (if (and (pair? value) (list? (car value)) (symbol? (cdr value)))
       (let ((image (car value))
-            (state (car value))
-            (ref (lookup-variable-by-value-ignoring-root value)))
-        (if ref
-            (string-append "[" var " " fun ":" value " forState:" (generate-control-state state) "];")
-            (string-append "[" var " " fun ":" (generate-image-named image) " forState:" (generate-control-state state) "];")))
+            (state (cdr value)))
+        (string-append "[" var " " fun ":" (generate-image-or-ref image) " forState:" (generate-control-state state) "];"))
       (error (string-append "Invalid data type for [" var " " fun ":forState:]") value)))
 
 (define (generate-localized value)
@@ -66,12 +85,34 @@
    (else
     (error "Invalid string type" value))))
 
+(define (generate-font value)
+  (cond
+   ((and (tagged-list? value 'font) (string? (cadr value)) (number? (caddr value)))
+    (let ((ref (lookup-variable-by-value-ignoring-root value)))
+      (if ref
+          (symbol->string ref)
+          (string-append "[UIFont fontWithName:@\"" (cadr value) "\" size:" (number->string (caddr value)) "]"))))
+   ((and (tagged-list? value 'system-font-of-size) (number? (cadr value)))
+    (string-append "[UIFont systemFontOfSize:" (cadr value) "]"))
+   ((and (tagged-list? value 'bold-system-font-of-size) (number? (cadr value)))
+    (string-append "[UIFont boldSystemFontOfSize:" (cadr value) "]"))
+   ((and (tagged-list? value 'italic-system-font-of-size) (number? (cadr value)))
+    (string-append "[UIFont italicSystemFontOfSize:" (cadr value) "]"))
+   (else (error "Invalid font " value))))
+
 (define (generate-array value)
   (let loop ((array value)
              (result "[NSArray arrayWithObjects:"))
     (if (null? array)
         (string-append result "nil]")
         (loop (cdr array) (string-append result (car array) ", ")))))
+
+(define (generate-dictionary value)
+  (let loop ((array value)
+             (result "[NSDictionary dictionaryWithObjectsAndKeys:"))
+    (if (null? array)
+        (string-append result "nil]")
+        (loop (cdr array) (string-append result (cdar array) ", " (caar array) ", ")))))
 
 (define (generate-control-state state)
   (case state
@@ -81,6 +122,19 @@
     ((selected) "UIControlStateSelected")
     ((application) "UIControlStateApplication")
     (else "UIControlStateReserved")))
+
+(define (generate-bar-metrics metrics)
+  (case metrics
+    ((landscape-phone) "UIBarMetricsLandscapePhone")
+    (else "UIBarMetricsDefault")))
+
+(define (generate-segment-type segment)
+  (case segment
+    ((left) "UISegmentedControlSegmentAny")
+    ((center) "UISegmentedControlSegmentLeft")
+    ((right) "UISegmentedControlSegmentCenter")
+    ((alone) "UISegmentedControlSegmentRight")
+    (else "UISegmentedControlSegmentAlone")))
 
 (define the-predefined-colors
   (list (cons 'black-color "blackColor")
@@ -128,7 +182,7 @@
 (define (generate-set-color-for-state var fun value)
   (if (and (pair? value) (symbol? (car value)) (symbol? (cdr value)))
       (let ((color (car value))
-            (state (car value))
+            (state (cdr value))
             (ref (lookup-variable-by-value-ignoring-root value)))
         (if ref
             (string-append "[" var " " fun ":" ref " forState:" (generate-control-state state) "];")
@@ -140,15 +194,15 @@
   (newline))
 
 (define (generate-enabled var value)
-  (display (generate-bool var "enabled" value))
+  (display (generate-assign-bool var "enabled" value))
   (newline))
 
 (define (generate-selected var value)
-  (display (generate-bool var "selected" value))
+  (display (generate-assign-bool var "selected" value))
   (newline))
 
 (define (generate-hidden var value)
-  (display (generate-bool var "hidden" value))
+  (display (generate-assign-bool var "hidden" value))
   (newline))
 
 (define (generate-alpha var value)
@@ -156,27 +210,27 @@
   (newline))
 
 (define (generate-opaque var value)
-  (display (generate-bool var "opaque" value))
+  (display (generate-assign-bool var "opaque" value))
   (newline))
 
 (define (generate-clips-to-bounds var value)
-  (display (generate-bool var "clipsToBounds" value))
+  (display (generate-assign-bool var "clipsToBounds" value))
   (newline))
 
 (define (generate-clears-context-before-drawing var value)
-  (display (generate-bool var "clearsContextBeforeDrawing" value))
+  (display (generate-assign-bool var "clearsContextBeforeDrawing" value))
   (newline))
 
 (define (generate-user-interaction-enabled var value)
-  (display (generate-bool var "userInteractionEnabled" value))
+  (display (generate-assign-bool var "userInteractionEnabled" value))
   (newline))
 
 (define (generate-multiple-touch-enabled var value)
-  (display (generate-bool var "multipleTouchEnabled" value))
+  (display (generate-assign-bool var "multipleTouchEnabled" value))
   (newline))
 
 (define (generate-exclusive-touch var value)
-  (display (generate-bool var "exclusiveTouch" value))
+  (display (generate-assign-bool var "exclusiveTouch" value))
   (newline))
 
 (define the-predefined-autoresizings
@@ -199,7 +253,7 @@
       (invalid-data-type-error var "autoresizingMask" "none/flexible-left-margin/flexible-width/flexible-right-margin/flexible-top-margin/flexible-height/flexible-bottom-margin" value)))
 
 (define (generate-autoresizes-subviews var value)
-  (display (generate-bool var "autoresizesSubviews" value))
+  (display (generate-assign-bool var "autoresizesSubviews" value))
   (newline))
 
 (define the-predefined-content-modes
@@ -271,24 +325,9 @@
   (display (string-append var ".text = " (generate-string value) ";"))
   (newline))
 
-(define (generate-font var value)
-  (cond
-   ((and (tagged-list? value 'font) (string? (cadr value)) (number? (caddr value)))
-    (let ((ref (lookup-variable-by-value-ignoring-root value)))
-      (if ref
-          (display (string-append var ".font = " (symbol->string ref) ";"))
-          (display (string-append var ".font = [UIFont fontWithName:@\"" (cadr value) "\" size:" (number->string (caddr value)) "];"))))
-    (newline))
-   ((and (tagged-list? value 'system-font-of-size) (number? (cadr value)))
-    (display (string-append var ".font = [UIFont systemFontOfSize:" (cadr value) "];"))
-    (newline))
-   ((and (tagged-list? value 'bold-system-font-of-size) (number? (cadr value)))
-    (display (string-append var ".font = [UIFont boldSystemFontOfSize:" (cadr value) "];"))
-    (newline))
-   ((and (tagged-list? value 'italic-system-font-of-size) (number? (cadr value)))
-    (display (string-append var ".font = [UIFont italicSystemFontOfSize:" (cadr value) "];"))
-    (newline))
-   (else (error "Invalid font " value))))
+(define (generate-assign-font var value)
+  (display (string-append var ".font = " (generate-font value) ";"))
+  (newline))
 
 (define (generate-text-color var value)
   (display (generate-assign-color var "textColor" value))
@@ -343,7 +382,7 @@
       (invalid-data-type-error var "lineBreakMode" "word-wrap/character-wrap/clip/head-truncation/tail-truncation/middle-truncation" value)))
 
 (define (generate-adjusts-font-size-to-fit-width var value)
-  (display (generate-bool var "adjustsFontSizeToFitWidth" value))
+  (display (generate-assign-bool var "adjustsFontSizeToFitWidth" value))
   (newline))
 
 (define the-predefined-baseline-adjustments
@@ -379,7 +418,7 @@
   (newline))
 
 (define (generate-highlighted var value)
-  (display (generate-bool var "highlighted" value))
+  (display (generate-assign-bool var "highlighted" value))
   (newline))
 
 (define (generate-shadow-color var value)
@@ -394,7 +433,7 @@
       (invalid-data-type-error var "shadowOffset" "size" value)))
 
 (define (generate-reverses-title-shadow-when-highlighted var value)
-  (display (generate-bool var "reversesTitleShadowWhenHighlighted" value))
+  (display (generate-assign-bool var "reversesTitleShadowWhenHighlighted" value))
   (newline))
 
 (define (generate-title-for-state var value)
@@ -414,15 +453,15 @@
   (newline))
 
 (define (generate-adjusts-image-when-highlighted var value)
-  (display (generate-bool var "adjustsImageWhenHighlighted" value))
+  (display (generate-assign-bool var "adjustsImageWhenHighlighted" value))
   (newline))
 
 (define (generate-adjusts-image-when-disabled var value)
-  (display (generate-bool var "adjustsImageWhenDisabled" value))
+  (display (generate-assign-bool var "adjustsImageWhenDisabled" value))
   (newline))
 
 (define (generate-shows-touch-when-highlighted var value)
-  (display (generate-bool var "showsTouchWhenHighlighted" value))
+  (display (generate-assign-bool var "showsTouchWhenHighlighted" value))
   (newline))
 
 (define (generate-background-image-for-state var value)
@@ -486,11 +525,11 @@
   (newline))
 
 (define (generate-interaction-enabled var value)
-  (display (generate-bool var "interactionEnabled" value))
+  (display (generate-assign-bool var "interactionEnabled" value))
   (newline))
 
 (define (generate-highlighted var value)
-  (display (generate-bool var "highlighted" value))
+  (display (generate-assign-bool var "highlighted" value))
   (newline))
 
 (define (generate-tint-color var value)
@@ -510,7 +549,7 @@
   (newline))
 
 (define (generate-continuous var value)
-  (display (generate-bool var "continuous" value))
+  (display (generate-assign-bool var "continuous" value))
   (newline))
 
 (define (generate-minimum-value-image var value)
@@ -545,6 +584,108 @@
   (display (generate-set-image-for-state var "setThumbImage" value))
   (newline))
 
+(define (generate-selected-segment-index var value)
+  (display (generate-number var "selectedSegmentIndex" value))
+  (newline))
+
+(define (generate-momentary var value)
+  (display (generate-assign-bool var "momentary" value))
+  (newline))
+
+(define the-predefined-segmented-control-style
+  (list (cons 'plain "UISegmentedControlStylePlain")
+        (cons 'bordered "UISegmentedControlStyleBordered")
+        (cons 'bar "UISegmentedControlStyleBar")
+        (cons 'bezeled "UISegmentedControlStyleBezeled")))
+
+(define (generate-segmented-control-style var value)
+  (if (symbol? value)
+      (let ((style (assq value the-predefined-segmented-control-style)))
+        (if style
+            (begin
+              (display (string-append var ".segmentedControlStyle = " (cdr style) ";"))
+              (newline))
+            (error "Unknown segmented control style" value)))
+      (invalid-data-type-error var "segmented-control-style" "plain/bordered/bar/bezeled" value)))
+
+(define (generate-apportions-segment-widths-by-content var value)
+  (display (generate-assign-bool var "apportionsSegmentWidthsByContent" value)))
+
+(define (generate-enabled-for-segment-at-index var value)
+  (if (and (pair? value) (boolean? (car value)) (number? (cdr value)))
+      (let ((enabled (car value))
+            (index (cdr value)))
+        (display (string-append "[" var " setEnabled:" (generate-bool enabled) " forSegmentAtIndex:" (number->string index) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setEnabled:forsegmentAtIndex:]") value)))
+
+(define (generate-content-offset-for-segment-at-index var value)
+  (if (and (pair? value) (list? (car value)) (number? (cdr value)))
+      (let ((offset (car value))
+            (index (cdr value)))
+        (display (string-append "[" var " setContentOffset:" (generate-size offset) " forSegmentAtIndex:" (number->string index) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setContentOffset:forSegmentAtIndex:];") value)))
+
+(define (generate-width-for-segment-at-index var value)
+  (if (and (pair? value) (number? (car value)) (number? (cdr value)))
+      (let ((width (car value))
+            (index (cdr value)))
+        (display (string-append "[" var " setWidth:" (number->string width) " forSegmentAtIndex:" (number->string index) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setWidth:forSegmentAtIndex:];") value)))
+
+(define (generate-background-image-for-state-bar-metrics var value)
+  (if (and (list? value) (= 3 (length value)) (list? (car value)) (symbol? (cadr value)) (symbol? (caddr value)))
+      (let ((image (car value))
+            (state (cadr value))
+            (metrics (caddr value)))
+        (display (string-append "[" var " setBackgroundImage:" (generate-image-or-ref image) " forState:" (generate-control-state state) " barMetrics:" (generate-bar-metrics metrics) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setBackgroundImage:forState:barMetrics:];") value)))
+
+(define (generate-content-position-adjustment-for-segment-type-bar-metrics var value)
+  (if (and (list? value) (= 3 (length value)) (and (custom-value? (car value)) (eq? 'offset (caar value))) (symbol? (cadr value)) (symbol? (caddr value)))
+      (let ((offset (car value))
+            (segment-type (cadr value))
+            (metrics (caddr value)))
+        (display (string-append "[" var " setContentPositionAdjustment:" (generate-offset offset) " forSegmentType:" (generate-segment-type segment-type) " barMetrics:" (generate-bar-metrics metrics) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setContentPositionAdjustment:forSegmentType:barMetrics:];") value)))
+
+(define (generate-divider-image-for-left-segment-state-right-segment-state-bar-metrics var value)
+  (if (and (list? value) (= 4 (length value)) (and (custom-value? (car value)) (eq? 'image-named (caar value))) (symbol? (cadr value)) (symbol? (caddr value)) (symbol? (cadddr value)))
+      (let ((image (car value))
+            (left (cadr value))
+            (right (caddr value))
+            (metrics (cadddr value)))
+        (display (string-append "[" var " setDividerImage:" (generate-image-or-ref image) " forLeftSegmentState:" (generate-control-state left) " rightSegmentState:" (generate-control-state right) " barMetrics:" (generate-bar-metrics metrics) "];"))
+        (newline))
+      (error (string-append "Invalid data type for [" var " setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:];") value)))
+
+(define (generate-title-text-attributes-for-state var value)
+  (if (and (pair? value) (list? (car value)) (symbol? (cdr value)))
+      (let ((attrs (car value))
+            (state (cdr value)))
+        (let loop ((as attrs)
+                   (result '()))
+          (if (null? as)
+              (begin
+                (display (string-append "[" var " setTitleTextAttributes:" (generate-dictionary result) " forState:" (generate-control-state state) "];"))
+                (newline))
+              (loop (cdr as) (cons (cond
+                                    ((eq? 'font (caar as))
+                                     (cons "UITextAttributeFont" (generate-font (cdar as))))
+                                    ((eq? 'text-color (caar as))
+                                     (cons "UITextAttributeTextColor" (generate-color (cdar as))))
+                                    ((eq? 'text-shadow-color (caar as))
+                                     (cons "UITextAttributeTextShadowColor" (generate-color (cdar as))))
+                                    ((eq? 'text-shadow-offset (caar as))
+                                     (cons "UITextAttributeTextShadowOffset" (generate-offset (cdar as))))
+                                    (else (error "Unknown text attributes" (caar as))))
+                                   result)))))
+      (error (string-append "Invalid data type for [" var " setTitleTextAttributes:forState:];") value)))
+
 (define the-view-attribute-generators
   (list (cons 'background-color generate-background-color)
         (cons 'hidden generate-hidden)
@@ -571,7 +712,7 @@
 (define the-label-attribute-generators
   (append the-view-attribute-generators
           (list (cons 'text generate-text)
-                (cons 'font generate-font)
+                (cons 'font generate-assign-font)
                 (cons 'text-color generate-text-color)
                 (cons 'text-alignment generate-text-alignment)
                 (cons 'line-break-mode generate-line-break-mode)
@@ -627,3 +768,20 @@
                 (cons 'maximum-track-image-for-state generate-maximum-track-image-for-state)
                 (cons 'thumb-tint-color generate-thumb-tint-color)
                 (cons 'thumb-image-for-state generate-thumb-image-for-state))))
+
+(define the-segmented-control-attribute-generators
+  (append the-view-attribute-generators
+          the-control-attribute-generators
+          (list (cons 'items fake-generate)
+                (cons 'selected-segment-index generate-selected-segment-index)
+                (cons 'momentary generate-momentary)
+                (cons 'segmented-control-style generate-segmented-control-style)
+                (cons 'apportions-segment-widths-by-content generate-apportions-segment-widths-by-content)
+                (cons 'tint-color generate-tint-color)
+                (cons 'enabled-for-segment-at-index generate-enabled-for-segment-at-index)
+                (cons 'content-offset-for-segment-at-index generate-content-offset-for-segment-at-index)
+                (cons 'width-for-segment-at-index generate-width-for-segment-at-index)
+                (cons 'background-image-for-state-bar-metrics generate-background-image-for-state-bar-metrics)
+                (cons 'content-position-adjustment-for-segment-type-bar-metrics generate-content-position-adjustment-for-segment-type-bar-metrics)
+                (cons 'divider-image-for-left-segment-state-right-segment-state-bar-metrics generate-divider-image-for-left-segment-state-right-segment-state-bar-metrics)
+                (cons 'title-text-attributes-for-state generate-title-text-attributes-for-state))))

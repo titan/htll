@@ -61,6 +61,23 @@
      ((eq? tag 'bold-system-font-of-size) (string-append "[" type " boldSystemFontOfSize:" (number->string (cadr view)) "]"))
      ((eq? tag 'italic-system-font-of-size) (string-append "[" type " italicSystemFontOfSize:" (number->string (cadr view)) "]")))))
 
+(define (generate-segmented-control-init type view)
+  (let* ((attrs (view-attributes view))
+         (items (assq 'items attrs)))
+    (if items
+        (let loop ((array (reverse (cdr items)))
+                   (result '()))
+          (if (null? array)
+              (string-append "[[" type " alloc] initWithItems:" (generate-array result) "]")
+              (let ((ref (lookup-variable-by-value-ignoring-root (car array))))
+                (if ref
+                    (loop (cdr array) (cons (symbol->string ref) result))
+                    (cond
+                     ((string? (car array)) (loop (cdr array) (cons (generate-string (car array)) result)))
+                     ((eq? 'image-named (view-type (car array))) (loop (cdr array) (cons (generate-image-named (car array)) result)))
+                     (else (error "Unsupported type " (car array) "need string or image")))))))
+        (error "Missing items in " view))))
+
 (define the-resource-types
   '(font system-font-of-size bold-system-font-of-size italic-system-font-of-size image-named hsba-color rgba-color))
 
@@ -78,7 +95,8 @@
         (cons 'info-dark-button (cons "UIButton" generate-button-init))
         (cons 'contact-add-button (cons "UIButton" generate-button-init))
         (cons 'image (cons "UIImageView" generate-normal-init))
-        (cons 'slider (cons "UISlider" generate-normal-init))))
+        (cons 'slider (cons "UISlider" generate-normal-init))
+        (cons 'segmented-control (cons "UISegmentedControl" generate-segmented-control-init))))
 
 (define (type-definition-type definition)
   (car definition))
@@ -124,6 +142,9 @@
 
 (define (slider attrs)
   (list 'slider attrs))
+
+(define (segmented-control attrs)
+  (list 'segmented-control attrs))
 
 (define (localized key default)
   (if (and (string? key) (string? default))
@@ -185,6 +206,11 @@
   (if (and (number? top) (number? left) (number? bottom) (number? right))
       (list 'edge-insets top left bottom right)
       (error "Invalid edge-insets" top left bottom right)))
+
+(define (offset h v)
+  (if (and (number? h) (number? v))
+      (list 'offset h v)
+      (error "Invalid offset" h v)))
 
 (define (blank)
   (list 'blank))
@@ -273,6 +299,7 @@
         (list 'contact-add-button contact-add-button)
         (list 'image image)
         (list 'slider slider)
+        (list 'segmented-control segmented-control)
         (list 'localized localized)
         (list 'hsba-color hsba-color)
         (list 'rgba-color rgba-color)
@@ -283,7 +310,8 @@
         (list 'italic-system-font-of-size italic-system-font-of-size)
         (list 'size size)
         (list 'rect rect)
-        (list 'edge-insets edge-insets)))
+        (list 'edge-insets edge-insets)
+        (list 'offset offset)))
 
 (define (dsl-procedure-names)
   (map car dsl-procedures))
@@ -364,7 +392,8 @@
         (cons 'info-dark-button the-button-attribute-generators)
         (cons 'contact-add-button the-button-attribute-generators)
         (cons 'image the-image-attribute-generators)
-        (cons 'slider the-slider-attribute-generators)))
+        (cons 'slider the-slider-attribute-generators)
+        (cons 'segmented-control the-segmented-control-attribute-generators)))
 
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))
