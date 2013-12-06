@@ -152,6 +152,21 @@
   (let ((bindings (let-bindings exp)))
     (cons (make-lambda (map let-binding-var bindings) (let-body exp)) (map let-binding-val bindings))))
 
+(define (let*? exp) (tagged-list? exp 'let*))
+
+(define (let*-bindings exp) (cadr exp))
+
+(define (let*-body exp) (cddr exp))
+
+(define (let*->nested-lets exp)
+  (define (loop bindings)
+    (if (null? bindings)
+        (let*-body exp)
+        (let ((binding (car bindings))
+              (rest (cdr bindings)))
+          `((let (,binding) ,@(loop rest))))))
+  (car (loop (let*-bindings exp))))
+
 (define (true? x)
   (not (eq? x #f)))
 
@@ -371,6 +386,7 @@
         ((begin? exp) (analyze-sequence (begin-actions exp)))
         ((cond? exp) (analyze (cond->if exp)))
         ((let? exp) (analyze (let->combination exp)))
+        ((let*? exp) (analyze (let*->nested-lets exp)))
         ((application? exp) (analyze-application exp))
         (else
          (error "Unknown expression type -- ANALYZE" exp))))
