@@ -96,7 +96,8 @@
         (cons 'contact-add-button (cons "UIButton" generate-button-init))
         (cons 'image (cons "UIImageView" generate-normal-init))
         (cons 'slider (cons "UISlider" generate-normal-init))
-        (cons 'segmented-control (cons "UISegmentedControl" generate-segmented-control-init))))
+        (cons 'segmented-control (cons "UISegmentedControl" generate-segmented-control-init))
+        (cons 'text-field (cons "UITextField" generate-normal-init))))
 
 (define (type-definition-type definition)
   (car definition))
@@ -145,6 +146,9 @@
 
 (define (segmented-control attrs)
   (list 'segmented-control attrs))
+
+(define (text-field attrs)
+  (list 'text-field attrs))
 
 (define (localized key default)
   (if (and (string? key) (string? default))
@@ -300,6 +304,7 @@
         (list 'image image)
         (list 'slider slider)
         (list 'segmented-control segmented-control)
+        (list 'text-field text-field)
         (list 'localized localized)
         (list 'hsba-color hsba-color)
         (list 'rgba-color rgba-color)
@@ -393,7 +398,8 @@
         (cons 'contact-add-button the-button-attribute-generators)
         (cons 'image the-image-attribute-generators)
         (cons 'slider the-slider-attribute-generators)
-        (cons 'segmented-control the-segmented-control-attribute-generators)))
+        (cons 'segmented-control the-segmented-control-attribute-generators)
+        (cons 'text-field the-text-field-attribute-generators)))
 
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))

@@ -20,13 +20,25 @@
           (string-append var "." attr " = NO;"))
       (invalid-data-type-error var attr "true/false" value)))
 
-(define (generate-float var attr value)
-  (if (number? value)
-      (string-append var "." attr " = " (number->string value) ";")
-      (invalid-data-type-error var attr "number" value)))
+(define (generate-float value)
+  (if (real? value)
+      (number->string value)
+      (error "Invalid float type" value)))
 
-(define (generate-number var attr value)
-  (generate-float var attr value))
+(define (generate-assign-float var attr value)
+  (if (real? value)
+      (string-append var "." attr " = " (generate-float value) ";")
+      (invalid-data-type-error var attr "float" value)))
+
+(define (generate-number value)
+  (if (number? value)
+      (number->string value)
+      (error "Invalid number type" value)))
+
+(define (generate-assign-number var attr value)
+  (if (number? value)
+      (string-append var "." attr " = " (generate-number value) ";")
+      (invalid-data-type-error var attr "number" value)))
 
 (define (generate-size value)
   (if (and (custom-value? value) (= (length value) 3) (eq? 'size (car value)) (number? (cadr value)) (number? (caddr value)))
@@ -85,6 +97,9 @@
    (else
     (error "Invalid string type" value))))
 
+(define (generate-assign-string var attr value)
+  (string-append var "." attr " = " (generate-string value) ";"))
+
 (define (generate-font value)
   (cond
    ((and (tagged-list? value 'font) (string? (cadr value)) (number? (caddr value)))
@@ -135,6 +150,28 @@
     ((right) "UISegmentedControlSegmentCenter")
     ((alone) "UISegmentedControlSegmentRight")
     (else "UISegmentedControlSegmentAlone")))
+
+(define (generate-text-field-border-style value)
+  (case value
+    ((line) "UITextBorderStyleLine")
+    ((bezel) "UITextBorderStyleBezel")
+    ((rounded-rect) "UITextBorderStyleRoundedRect")
+    (else "UITextBorderStyleNone")))
+
+(define (generate-text-field-view-mode value)
+  (case value
+    ((while-editing) "UITextViewModeWhileEditing")
+    ((unless-editing) "UITextViewModeUnlessEditing")
+    ((always) "UITextViewModeAlways")
+    (else "UITextViewModeNever")))
+
+(define (generate-view-ref value)
+  (if (and (custom-value? value) ((memq (car value) '(view label image custom-button rounded-rect-button detail-disclousre-button info-light-button info-dark-button contact-add-button slider segmented-control text-field))))
+      (let ((ref (lookup-variable-by-value-ignoring-root value)))
+        (if ref
+            (symbol->string ref)
+            (error "Cannot find view refered to " ref)))
+      (error "Invalid view type" value)))
 
 (define the-predefined-colors
   (list (cons 'black-color "blackColor")
@@ -206,7 +243,7 @@
   (newline))
 
 (define (generate-alpha var value)
-  (display (generate-float var "alpha" value))
+  (display (generate-assign-float var "alpha" value))
   (newline))
 
 (define (generate-opaque var value)
@@ -286,7 +323,7 @@
   (newline))
 
 (define (generate-content-scale-factor var value)
-  (display (generate-float var "contentScaleFactor" value))
+  (display (generate-assign-float var "contentScaleFactor" value))
   (newline))
 
 (define the-predefined-content-vertical-alignments
@@ -322,7 +359,7 @@
       (invalid-data-type-error var "contentHorizontalAlignment" "center/top/bottom/fill" value)))
 
 (define (generate-text var value)
-  (display (string-append var ".text = " (generate-string value) ";"))
+  (display (generate-assign-string var "text" value))
   (newline))
 
 (define (generate-assign-font var value)
@@ -517,11 +554,11 @@
               (loop (cdr array) (cons (generate-image-named (car array)) result)))))))
 
 (define (generate-animation-duration var value)
-  (display (generate-float var "animationDuration" value))
+  (display (generate-assign-float var "animationDuration" value))
   (newline))
 
 (define (generate-animation-repeat-count var value)
-  (display (generate-number var "animationRepeatCount" value))
+  (display (generate-assign-number var "animationRepeatCount" value))
   (newline))
 
 (define (generate-interaction-enabled var value)
@@ -537,15 +574,15 @@
   (newline))
 
 (define (generate-value var value)
-  (display (generate-number var "value" value))
+  (display (generate-assign-number var "value" value))
   (newline))
 
 (define (generate-minimum-value var value)
-  (display (generate-number var "minimumValue" value))
+  (display (generate-assign-number var "minimumValue" value))
   (newline))
 
 (define (generate-maximum-value var value)
-  (display (generate-number var "maximumValue" value))
+  (display (generate-assign-number var "maximumValue" value))
   (newline))
 
 (define (generate-continuous var value)
@@ -585,7 +622,7 @@
   (newline))
 
 (define (generate-selected-segment-index var value)
-  (display (generate-number var "selectedSegmentIndex" value))
+  (display (generate-assign-number var "selectedSegmentIndex" value))
   (newline))
 
 (define (generate-momentary var value)
@@ -686,6 +723,61 @@
                                    result)))))
       (error (string-append "Invalid data type for [" var " setTitleTextAttributes:forState:];") value)))
 
+(define (generate-placeholder var value)
+  (display (generate-assign-string var "placeholder" value))
+  (newline))
+
+(define (generate-minimum-font-size var value)
+  (display (generate-assign-float var "minimumFontSize" value))
+  (newline))
+
+(define (generate-clears-on-begin-editing var value)
+  (display (generate-assign-bool var "clearsOnBeginEditing" value))
+  (newline))
+
+(define (generate-border-style var value)
+  (display (string-append var ".borderStyle = " (generate-text-field-border-style value) ";"))
+  (newline))
+
+(define (generate-background var value)
+  (display (generate-assign-image var "background" value))
+  (newline))
+
+(define (generate-disabled-background var value)
+  (display (generate-assign-image var "disabledBackground" value))
+  (newline))
+
+(define (generate-assign-text-field-view-mode var attr value)
+  (string-append var "." attr " = " (generate-text-field-view-mode value) ";"))
+
+(define (generate-clear-button-mode var value)
+  (display (generate-assign-text-field-view-mode var "clearButtonMode" value))
+  (newline))
+
+(define (generate-left-view var value)
+  (display (string-append var ".leftView = " (generate-view-ref value) ";"))
+  (newline))
+
+(define (generate-left-view-mode var value)
+  (display (generate-assign-text-field-view-mode var "leftViewMode" value))
+  (newline))
+
+(define (generate-right-view var value)
+  (display (string-append var ".rightView = " (generate-view-ref value) ";"))
+  (newline))
+
+(define (generate-right-view-mode var value)
+  (display (generate-assign-text-field-view-mode var "rightViewMode" value))
+  (newline))
+
+(define (generate-input-view var value)
+  (display (string-append var ".inputView = " (generate-view-ref value) ";"))
+  (newline))
+
+(define (generate-accessory-view var value)
+  (display (string-append var ".accessoryView = " (generate-view-ref value) ";"))
+  (newline))
+
 (define the-view-attribute-generators
   (list (cons 'background-color generate-background-color)
         (cons 'hidden generate-hidden)
@@ -785,3 +877,25 @@
                 (cons 'content-position-adjustment-for-segment-type-bar-metrics generate-content-position-adjustment-for-segment-type-bar-metrics)
                 (cons 'divider-image-for-left-segment-state-right-segment-state-bar-metrics generate-divider-image-for-left-segment-state-right-segment-state-bar-metrics)
                 (cons 'title-text-attributes-for-state generate-title-text-attributes-for-state))))
+
+(define the-text-field-attribute-generators
+  (append the-view-attribute-generators
+          the-control-attribute-generators
+          (list (cons 'text generate-text)
+                (cons 'placeholder generate-placeholder)
+                (cons 'font generate-font)
+                (cons 'text-color generate-text-color)
+                (cons 'text-alignment generate-text-alignment)
+                (cons 'adjusts-font-size-to-fit-width generate-adjusts-font-size-to-fit-width)
+                (cons 'minimum-font-size generate-minimum-font-size)
+                (cons 'clears-on-begin-editing generate-clears-on-begin-editing)
+                (cons 'border-style generate-border-style)
+                (cons 'background generate-background)
+                (cons 'disabled-background generate-disabled-background)
+                (cons 'clear-button-mode generate-clear-button-mode)
+                (cons 'left-view generate-left-view)
+                (cons 'left-view-mode generate-left-view-mode)
+                (cons 'right-view generate-right-view)
+                (cons 'right-view-mode generate-right-view-mode)
+                (cons 'input-view generate-input-view)
+                (cons 'input-accessory-view generate-accessory-view))))
