@@ -57,6 +57,13 @@
         (string-append "UIOffsetMake(" h ", " v ")"))
       (error "Invalid offset type" value)))
 
+(define (generate-range value)
+  (if (and (custom-value? value) (= (length value) 3) (eq? 'range (car value) (number? (cadr value)) (number? (caddr value))))
+      (let ((loc (number->string (cadr value)))
+            (len (number->string (caddr value))))
+        (string-append "NSRangeMake(" loc ", " len ")"))
+      (error "Invalid range type" value)))
+
 (define (generate-edge-insets var attr value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
       (string-append var "." attr " = UIEdgeInsetsMake(" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) ");")
@@ -164,6 +171,15 @@
     ((unless-editing) "UITextViewModeUnlessEditing")
     ((always) "UITextViewModeAlways")
     (else "UITextViewModeNever")))
+
+(define (generate-data-detector-type value)
+  (case value
+    ((phone-number) "UIDataDetectorTypePhoneNumber")
+    ((link) "UIDataDetectorTypeLink")
+    ((address) "UIDataDetectorTypeAddress")
+    ((calendar-event) "UIDataDetectorTypeCalendarEvent")
+    ((all) "UIDataDetectorTypeAll")
+    (else "UIDataDetectorTypeNone")))
 
 (define (generate-view-ref value)
   (if (and (custom-value? value) ((memq (car value) '(view label image custom-button rounded-rect-button detail-disclousre-button info-light-button info-dark-button contact-add-button slider segmented-control text-field))))
@@ -778,6 +794,18 @@
   (display (string-append var ".accessoryView = " (generate-view-ref value) ";"))
   (newline))
 
+(define (generate-editable var value)
+  (display (generate-assign-bool var ".editable" value))
+  (newline))
+
+(define (generate-data-detector-types var value)
+  (display (string-append var ".dataDetectorTypes = " (generate-data-detector-type value) ";"))
+  (newline))
+
+(define (generate-selected-range var value)
+  (display (string-append var ".selectedRange = " (generate-range value) ";"))
+  (newline))
+
 (define the-view-attribute-generators
   (list (cons 'background-color generate-background-color)
         (cons 'hidden generate-hidden)
@@ -897,5 +925,17 @@
                 (cons 'left-view-mode generate-left-view-mode)
                 (cons 'right-view generate-right-view)
                 (cons 'right-view-mode generate-right-view-mode)
+                (cons 'input-view generate-input-view)
+                (cons 'input-accessory-view generate-accessory-view))))
+
+(define the-text-view-attribute-generators
+  (append the-view-attribute-generators
+          (list (cons 'text generate-text)
+                (cons 'font generate-font)
+                (cons 'text-color generate-text-color)
+                (cons 'editable generate-editable)
+                (cons 'data-detector-types generate-data-detector-types)
+                (cons 'text-alignment generate-text-alignment)
+                (cons 'selected-range generate-selected-range)
                 (cons 'input-view generate-input-view)
                 (cons 'input-accessory-view generate-accessory-view))))

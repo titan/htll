@@ -97,7 +97,8 @@
         (cons 'image (cons "UIImageView" generate-normal-init))
         (cons 'slider (cons "UISlider" generate-normal-init))
         (cons 'segmented-control (cons "UISegmentedControl" generate-segmented-control-init))
-        (cons 'text-field (cons "UITextField" generate-normal-init))))
+        (cons 'text-field (cons "UITextField" generate-normal-init))
+        (cons 'text-view (cons "UITextView" generate-normal-init))))
 
 (define (type-definition-type definition)
   (car definition))
@@ -149,6 +150,9 @@
 
 (define (text-field attrs)
   (list 'text-field attrs))
+
+(define (text-view attrs)
+  (list 'text-view attrs))
 
 (define (localized key default)
   (if (and (string? key) (string? default))
@@ -215,6 +219,11 @@
   (if (and (number? h) (number? v))
       (list 'offset h v)
       (error "Invalid offset" h v)))
+
+(define (range loc len)
+  (if (and (number? loc) (number? len))
+      (list 'range loc len)
+      (error "Invalid range" loc len)))
 
 (define (blank)
   (list 'blank))
@@ -305,6 +314,7 @@
         (list 'slider slider)
         (list 'segmented-control segmented-control)
         (list 'text-field text-field)
+        (list 'text-view text-view)
         (list 'localized localized)
         (list 'hsba-color hsba-color)
         (list 'rgba-color rgba-color)
@@ -316,7 +326,8 @@
         (list 'size size)
         (list 'rect rect)
         (list 'edge-insets edge-insets)
-        (list 'offset offset)))
+        (list 'offset offset)
+        (list 'range range)))
 
 (define (dsl-procedure-names)
   (map car dsl-procedures))
@@ -399,7 +410,8 @@
         (cons 'image the-image-attribute-generators)
         (cons 'slider the-slider-attribute-generators)
         (cons 'segmented-control the-segmented-control-attribute-generators)
-        (cons 'text-field the-text-field-attribute-generators)))
+        (cons 'text-field the-text-field-attribute-generators)
+        (cons 'text-view the-text-view-attribute-generators)))
 
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))
