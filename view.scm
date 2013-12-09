@@ -51,14 +51,14 @@
       (invalid-data-type-error var attr "rect" value)))
 
 (define (generate-offset value)
-  (if (and (custom-value? value) (= (length value) 3) (eq? 'offset (car value) (number? (cadr value)) (number? (caddr value))))
+  (if (and (custom-value? value) (= (length value) 3) (eq? 'offset (car value)) (number? (cadr value)) (number? (caddr value)))
       (let ((h (number->string (cadr value)))
             (v (number->string (caddr value))))
         (string-append "UIOffsetMake(" h ", " v ")"))
       (error "Invalid offset type" value)))
 
 (define (generate-range value)
-  (if (and (custom-value? value) (= (length value) 3) (eq? 'range (car value) (number? (cadr value)) (number? (caddr value))))
+  (if (and (custom-value? value) (= (length value) 3) (eq? 'range (car value)) (number? (cadr value)) (number? (caddr value)))
       (let ((loc (number->string (cadr value)))
             (len (number->string (caddr value))))
         (string-append "NSRangeMake(" loc ", " len ")"))
