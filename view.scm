@@ -64,9 +64,14 @@
         (string-append "NSRangeMake(" loc ", " len ")"))
       (error "Invalid range type" value)))
 
-(define (generate-edge-insets var attr value)
+(define (generate-edge-insets value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
-      (string-append var "." attr " = UIEdgeInsetsMake(" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) ");")
+      (string-append "UIEdgeInsetsMake(" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) ")")
+      (error "Invalid edge-insets type" value)))
+
+(define (generate-assign-edge-insets var attr value)
+  (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
+      (string-append var "." attr " = " (generate-edge-insets value) ";")
       (invalid-data-type-error var attr "edge-insets" value)))
 
 (define (generate-image-named value)
@@ -180,6 +185,12 @@
     ((calendar-event) "UIDataDetectorTypeCalendarEvent")
     ((all) "UIDataDetectorTypeAll")
     (else "UIDataDetectorTypeNone")))
+
+(define (generate-scroll-indicator-style value)
+  (case value
+    ((black) "UIScrollViewIndicatorStyleBlack")
+    ((white) "UIScrollViewIndicatorStyleWhite")
+    (else "UIScrollViewIndicatorStyleDefault")))
 
 (define (generate-view-ref value)
   (if (and (custom-value? value) ((memq (car value) '(view label image custom-button rounded-rect-button detail-disclousre-button info-light-button info-dark-button contact-add-button slider segmented-control text-field))))
@@ -374,6 +385,90 @@
             (error "Unknown content horizontal alignment" value)))
       (invalid-data-type-error var "contentHorizontalAlignment" "center/top/bottom/fill" value)))
 
+(define (generate-content-offset var value)
+  (display (string-append var ".contentOffset = " (generate-offset value) ";"))
+  (newline))
+
+(define (generate-content-size var value)
+  (display (string-append var ".contentSize = " (generate-size value) ";"))
+  (newline))
+
+(define (generate-content-inset var value)
+  (display (generate-assign-edge-insets var "contentInset" value))
+  (newline))
+
+(define (generate-scroll-enabled var value)
+  (display (generate-assign-bool var "scrollEnabled" value))
+  (newline))
+
+(define (generate-direction-lock-enabled var value)
+  (display (generate-assign-bool var "directionLockEnabled" value))
+  (newline))
+
+(define (generate-scroll-to-top var value)
+  (display (generate-assign-bool var "scrollToTop" value))
+  (newline))
+
+(define (generate-paging-enabled var value)
+  (display (generate-assign-bool var "pagingEnabled" value))
+  (newline))
+
+(define (generate-bounces var value)
+  (display (generate-assign-bool var "bounces" value))
+  (newline))
+
+(define (generate-always-bounces-vertical var value)
+  (display (generate-assign-bool var "alwaysBouncesVertical" value))
+  (newline))
+
+(define (generate-always-bounces-horizontal var value)
+  (display (generate-assign-bool var "alwaysBouncesHorizontal" value))
+  (newline))
+
+(define (generate-can-cancel-content-touches var value)
+  (display (generate-assign-bool var "canCancelContentTouches" value))
+  (newline))
+
+(define (generate-delays-content-touches var value)
+  (display (generate-assign-bool var "delaysContentTouches" value))
+  (newline))
+
+(define (generate-deceleration-rate var value)
+  (display (generate-assign-float var "decelerationRate" value))
+  (newline))
+
+(define (generate-indicator-style var value)
+  (display (string-append var ".indicatorStyle = " (generate-scroll-indicator-style value) ";"))
+  (newline))
+
+(define (generate-scroll-indicator-insets var value)
+  (display (generate-assign-edge-insets var "scrollIndicator" value))
+  (newline))
+
+(define (generate-shows-horizontal-scroll-indicator var value)
+  (display (generate-assign-bool var "showsHorizontalScrollIndicator" value))
+  (newline))
+
+(define (generate-shows-vertical-scroll-indicator var value)
+  (display (generate-assign-bool var "showsVerticalScrollIndicator" value))
+  (newline))
+
+(define (generate-zoom-scale var value)
+  (display (generate-assign-float var "zoomScale" value))
+  (newline))
+
+(define (generate-maximum-zoom-scale var value)
+  (display (generate-assign-float var "maximumZoomScale" value))
+  (newline))
+
+(define (generate-minimum-zoom-scale var value)
+  (display (generate-assign-float var "minimumZoomScale" value))
+  (newline))
+
+(define (generate-bounces-zoom var value)
+  (display (generate-assign-bool var "bouncesZoom" value))
+  (newline))
+
 (define (generate-text var value)
   (display (generate-assign-string var "text" value))
   (newline))
@@ -526,15 +621,15 @@
   (newline))
 
 (define (generate-content-edge-insets var value)
-  (display (generate-edge-insets var "contentEdgeInsets" value))
+  (display (generate-assign-edge-insets var "contentEdgeInsets" value))
   (newline))
 
 (define (generate-title-edge-insets var value)
-  (display (generate-edge-insets var "titleEdgeInsets" value))
+  (display (generate-assign-edge-insets var "titleEdgeInsets" value))
   (newline))
 
 (define (generate-image-edge-insets var value)
-  (display (generate-edge-insets var "imageEdgeInsets" value))
+  (display (generate-assign-edge-insets var "imageEdgeInsets" value))
   (newline))
 
 (define (generate-image var value)
@@ -828,6 +923,30 @@
         (cons 'highlighted generate-highlighted)
         (cons 'content-vertical-alignment generate-content-vertical-alignment)
         (cons 'content-horizontal-alignment generate-content-horizontal-alignment)))
+
+(define the-scroll-attribute-generators
+  (append the-view-attribute-generators
+          (list (cons 'content-offset generate-content-offset)
+                (cons 'content-size generate-content-size)
+                (cons 'content-inset generate-content-inset)
+                (cons 'scroll-enabled generate-scroll-enabled)
+                (cons 'direction-lock-enabled generate-direction-lock-enabled)
+                (cons 'scroll-to-top generate-scroll-to-top)
+                (cons 'paging-enabled generate-paging-enabled)
+                (cons 'bounces generate-bounces)
+                (cons 'always-bounces-vertical generate-always-bounces-vertical)
+                (cons 'always-bounces-horizontal generate-always-bounces-horizontal)
+                (cons 'can-cancel-content-touches generate-can-cancel-content-touches)
+                (cons 'delays-content-touches generate-delays-content-touches)
+                (cons 'deceleration-rate generate-deceleration-rate)
+                (cons 'indicator-style generate-indicator-style)
+                (cons 'scroll-indicator-insets generate-scroll-indicator-insets)
+                (cons 'shows-horizontal-scroll-indicator generate-shows-horizontal-scroll-indicator)
+                (cons 'shows-vertical-scroll-indicator generate-shows-vertical-scroll-indicator)
+                (cons 'zoom-scale generate-zoom-scale)
+                (cons 'maximum-zoom-scale generate-maximum-zoom-scale)
+                (cons 'minimum-zoom-scale generate-minimum-zoom-scale)
+                (cons 'bounces-zoom generate-bounces-zoom))))
 
 (define the-label-attribute-generators
   (append the-view-attribute-generators

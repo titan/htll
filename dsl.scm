@@ -83,6 +83,7 @@
 
 (define the-type-definitions ; (list (cons view-type (cons type-string init-fun)))
   (list (cons 'view (cons "UIView" generate-normal-init))
+        (cons 'scroll (cons "UIScrollView" generate-normal-init))
         (cons 'font (cons "UIFont" generate-font-init))
         (cons 'system-font-of-size (cons "UIFont" generate-font-init))
         (cons 'bold-system-font-of-size (cons "UIFont" generate-font-init))
@@ -114,6 +115,9 @@
 
 (define (view attrs)
   (list 'view attrs))
+
+(define (scroll attrs)
+  (list 'scroll attrs))
 
 (define (label attrs)
   (list 'label attrs))
@@ -303,6 +307,7 @@
         (list 'hseq horizontal-sequence)
         (list 'vseq vertical-sequence)
         (list 'view view)
+        (list 'scroll scroll)
         (list 'label label)
         (list 'custom-button custom-button)
         (list 'rounded-rect-button rounded-rect-button)
@@ -400,6 +405,7 @@
 
 (define the-attribute-generators
   (list (cons 'view the-view-attribute-generators)
+        (cons 'scroll the-scroll-attribute-generators)
         (cons 'label the-label-attribute-generators)
         (cons 'custom-button the-button-attribute-generators)
         (cons 'rounded-rect-button the-button-attribute-generators)
