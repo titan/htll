@@ -82,7 +82,27 @@ Here is a example about `above`:
 
 `beside` will place `left` on the left of `right`. Like `top` in
 `above`, `left` occupies `ratio` percenter of area inherited from
-parent. `ratio` has the same meaning as in `above`.
+parent, and `right` gets the rest. `ratio` has the same meaning as in
+`above`.
+
+### Advanced Primitives
+
+For complex interfaces, a single `above` or `beside` primitive is not
+enough, but you can combine them together to match the
+requirement. Consider a simple name input form in there are a name
+label, a text field and a confirm button. You can layout them like
+this:
+
+    (in (beside (label '((text . "Name")))
+                (beside (text-field '())
+                        (button '(())) 0.8) 0.3) 'self.view)
+
+See, it's easy. But you should pay attention to those two
+`ratio`s. The `ratio` in the first `beside` means that label gets 30
+percent width of `self.view`, and the `ratio` in the second one means
+the text field gets 56 percent of width of `self.view`. The second
+`beside` is `0.7 * self.view`, so the text field is `0.8 * 0.7 *
+self.view`.
 
 Views
 -----
