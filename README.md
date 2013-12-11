@@ -35,12 +35,12 @@ Layout Primitives
 HTLL uses serval primitives to layout interface. Those primitives can
 be grouped into 3 classes: top-level primitive, basic primitives and
 advanced primitives. The top-level primitive is entrance of layouting,
-just like the main function in C programs. Primitives belong to basic
+just like the main function in C language. Primitives belong to basic
 class are atomic, they can combine to more complex layout
 primitives. Advanced primitives are some common patterns of combining
 basic primitives, they are made for convenience.
 
-### Top-Level primitive
+### Top-Level Primitive
 
 There are only one primitive, `in`, in the top-level class.
 
@@ -59,8 +59,30 @@ A hello world style HTLL source code looks like this:
 
     (in (label '((text . "Hello World"))) 'self.view)
 
-Attention, HTLL is a scheme-like language, so we need add "'" in front
+Attention, HTLL is a scheme-like language, so we need add `'` in front
 of "self.view" to make sure it's a symbol.
+
+### Basic Primitives
+
+    (above top bottom ratio)
+
+`above` will place `top` on the `bottom`, and occupy `ratio` percent
+of area inherited from parent. `bottom` gets the rest area. Here,
+`top` and `bottom` can be a basic primitive, a advanced primitive, or
+a view. `ratio` is a float between 0.0 to 1.0.
+
+Here is a example about `above`:
+
+    (in (above (label '((text . "Hello")))
+               (label '((text . "World"))) 0.5) 'self.view)
+
+"Hello" will be placed on top of "World".
+
+    (beside left right ratio)
+
+`beside` will place `left` on the left of `right`. Like `top` in
+`above`, `left` occupies `ratio` percenter of area inherited from
+parent. `ratio` has the same meaning as in `above`.
 
 Views
 -----
