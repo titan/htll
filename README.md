@@ -174,13 +174,13 @@ Predefined colors include:
 - scroll-view-textured-background-color
 - under-page-background-color
 
-The following is the code to layout a red label:
+The following code is to layout a red label in `self.view`:
 
     (in (label '((text . "Hello World")
                  (text-color . red-color))) 'self.view)
 
-I still provide two customize color definition functions if above
-predefined colors don't satisfy your requirement.
+There are two customize color definition functions if above predefined
+colors don't satisfy your requirement.
 
     (hsba-color hue saturation brightness alpha)
     (rgba-color red green blue alpha)
@@ -204,6 +204,57 @@ Rewrite above example with `rgba-color` like this:
 
     (in (label `((text . "Hello World")
                  (text-color . ,(rgba-color 1 0 0 1)))) 'self.view)
+
+### Font
+
+You can use 4 functions to create font for text views:
+
+- `(font name size)`
+
+    This function creates and returns a font object for the specified
+    font name and size.
+
+- `(system-font-with-size size)`
+
+    This function returns the font object used for standard interface
+    items in the specified size.
+
+- `(bold-system-font-of-size size)`
+
+    This function returns the font object used for standard interface
+    items that are rendered in boldface type in the specified size.
+
+- `(italic-system-font-of-size size)`
+
+    This function returns the font object used for standard interface
+    items that are rendered in italic type in the specified size.
+
+There are 4 auxiliary functions to help you get the suitable font size
+of view:
+
+- `(label-font-size)`
+
+    This function returns the standard font size used for labels.
+
+- `(button-font-size)`
+
+    This function returns the standard font size used for buttons.
+
+- `(small-system-font-size)`
+
+    This function returns the size of standard small system font.
+
+- `(system-font-size)`
+
+    This function return the size of standard system font.
+
+All above 4 function have no argument.
+
+A simple example show you how to use font resource:
+
+    (in (label `((text . "font")
+                 (font . ,(system-font-of-size (system-font-size)))))
+        'self.view)
 
 Sample
 ------
