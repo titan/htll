@@ -64,6 +64,8 @@ of "self.view" to make sure it's a symbol.
 
 ### Basic Primitives
 
+#### above
+
     (above top bottom ratio)
 
 `above` will place `top` on the `bottom`, and occupy `ratio` percent
@@ -71,12 +73,14 @@ of area inherited from parent. `bottom` gets the rest area. Here,
 `top` and `bottom` can be a basic primitive, a advanced primitive, or
 a view. `ratio` is a float between 0.0 to 1.0.
 
-Here is a example about `above`:
+Here is an example about `above`:
 
     (in (above (label '((text . "Hello")))
                (label '((text . "World"))) 0.5) 'self.view)
 
 "Hello" will be placed on top of "World".
+
+#### beside
 
     (beside left right ratio)
 
@@ -98,11 +102,41 @@ this:
                         (button '(())) 0.8) 0.3) 'self.view)
 
 See, it's easy. But you should pay attention to those two
-`ratio`s. The `ratio` in the first `beside` means that label gets 30
-percent width of `self.view`, and the `ratio` in the second one means
-the text field gets 56 percent of width of `self.view`. The second
-`beside` is `0.7 * self.view`, so the text field is `0.8 * 0.7 *
-self.view`.
+`ratio`s. The `ratio` in the first `beside` means that label gets 30%
+width of `self.view`, and the `ratio` in the second one means the text
+field gets 56% width of `self.view`. The second `beside` is `0.7 *
+self.view`, so the text field is `0.8 * 0.7 * self.view`.
+
+There are many ways to combine basic primitives, I just refined some
+common patterns as advanced primitives.
+
+#### center
+
+    (center child h-ratio v-ratio)
+
+`center` is the first advanced primitive I want to introduce. It
+places the child, a view or a primitive, in the center of area
+inherited from parent. h-ratio is ratio of horizental padding,
+correspondingly, v-ratio is ratio of vertical padding.
+
+#### hseq
+
+    (hseq children)
+
+`hseq` layout children sequentially in horizental direction. Here is
+an example:
+
+    (in (hseq (label '((text . "Hello")))
+              (label '((text . "World")))
+              (label '((text . "!")))) 'self.view)
+
+Each label gets 33% width of `self.view`.
+
+#### vseq
+
+    (vseq children)
+
+`vseq` is just like `hseq` but in vertical direction.
 
 Views
 -----
