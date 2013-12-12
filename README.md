@@ -46,11 +46,11 @@ There are only one primitive, `in`, in the top-level class.
 
     (in child parent)
 
-`child` presents what and how we want to layout interface. Usually,
+`child` represents what and how we want to layout interface. Usually,
 `child` is a advanced primitive, but it can be any primitives(except
 the top-level primitive) or any views.
 
-`parent` presents where we want to layout interface. General, we take
+`parent` represents where we want to layout interface. General, we take
 “self.view” as our canvas, it's the root view of a view controller. If
 you want to layout in a subview of "self.view", you can replace it as
 you wish.
@@ -141,8 +141,74 @@ Each label gets 33% width of `self.view`.
 Views
 -----
 
+Resources
+---------
+
+Resources are special data types in HTLL, they cannot be layouted but
+can be referenced by any view. The reason they occurs in HTTL is that
+we need decorate views with them like what we do in object-c.
+
+### Color
+
+Predefined colors include:
+
+- black-color
+- darkGray-color
+- lightGray-color
+- white-color
+- gray-color
+- red-color
+- green-color
+- blue-color
+- cyan-color
+- yellow-color
+- magenta-color
+- orange-color
+- purple-color
+- brown-color
+- clear-color
+- light-text-color
+- dark-text-color
+- group-table-view-background-color
+- view-flipside-background-color
+- scroll-view-textured-background-color
+- under-page-background-color
+
+The following is the code to layout a red label:
+
+    (in (label '((text . "Hello World")
+                 (text-color . red-color))) 'self.view)
+
+I still provide two customize color definition functions if above
+predefined colors don't satisfy your requirement.
+
+    (hsba-color hue saturation brightness alpha)
+    (rgba-color red green blue alpha)
+
+- The hue component of the color object in the HSB color space,
+  specified as a value from 0.0 to 1.0.
+- The saturation component of the color object in the HSB color space,
+  specified as a value from 0.0 to 1.0.
+- The brightness (or value) component of the color object in the HSB
+  color space, specified as a value from 0.0 to 1.0.
+- The alpha(opacity) value of the color object, specified as a value
+  from 0.0 to 1.0.
+- The red component of the color object, specified as a value from 0.0
+  to 1.0.
+- The green component of the color object, specified as a value from
+  0.0 to 1.0.
+- The blue component of the color object, specified as a value from
+  0.0 to 1.0.
+
+Rewrite above example with `rgba-color` like this:
+
+    (in (label `((text . "Hello World")
+                 (text-color . ,(rgba-color 1 0 0 1)))) 'self.view)
+
 Sample
 ------
 
 Further Work
 ------------
+
+1. Support iOS5, iOS6 and iOS7
