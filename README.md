@@ -256,6 +256,16 @@ A simple example show you how to use font resource:
                  (font . ,(system-font-of-size (system-font-size)))))
         'self.view)
 
+### Image
+
+The only way to reference a image in HTLL is `(image-named name)`, it
+returns the image object associated with the specified filename. This
+method looks in the system caches for an image object with the
+specified name and returns that object if it exists. If a matching
+image object is not already in the cache, this method loads the image
+data from the specified file, caches it, and then returns the
+resulting object.
+
 Sample
 ------
 
