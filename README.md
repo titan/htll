@@ -141,6 +141,473 @@ Each label gets 33% width of `self.view`.
 Views
 -----
 
+Views is what you want to layout in HTLL. Most of views have many
+attributes, they are structured as an association list, you should
+select and set them as your need.
+
+### blank
+
+`blank` is a fake view, it doesn't show any on the screen, just
+occupies area inherited from parent. But it's useful when
+layouting. For example, if you don't want to layout two visible view
+so closed, you can insert a `blank` between them. e.g.
+
+    (in (beside (label '((text . "Hello")))
+                (beside blank
+                        (label '((text . "World"))) 0.5) 0.3) 'self.view)
+
+### control
+
+`control` is an abstract view which means you cannot instance it in
+HTLL. There are serveral views inherit `control`, they also get it's
+attributes.
+
+- enabled
+
+    A Boolean value that determines whether the receiver is enabled.
+
+- selected
+
+    A Boolean value that determines whether the receiver is
+    highlighted.
+
+- highlighted
+
+    A Boolean value that determines whether the receiver is highlighted.
+
+- content-vertical-alignment
+
+    The vertical alignment of content (text or image) within the
+    receiver. Available values include:
+
+    1. center
+    2. top
+    3. bottom
+    4. fill
+
+- content-horizontal-alignment
+
+    The horizontal alignment of content (text or image) within the
+    receiver. Available values include:
+
+    1. center
+    2. left
+    3. right
+    4. fill
+
+### view
+
+`view` corresponds to UIView in iOS, and all views inherit from it.
+
+- background-color
+
+    The receiver’s background color.
+
+- hidden
+
+    A Boolean value that determines whether the receiver is hidden.
+
+- alpha
+
+    The receiver’s alpha value. A float value.
+
+- opaque
+
+    A Boolean value that determines whether the receiver is opaque.
+
+- clips-to-bounds
+
+    A Boolean value that determines whether subviews are confined to
+    the bounds of the receiver.
+
+- clears-context-before-drawing
+
+    A Boolean value that determines whether the receiver’s bounds
+    should be automatically cleared before drawing.
+
+- user-interaction-enabled
+
+    A Boolean value that determines whether user events are ignored
+    and removed from the event queue.
+
+- multiple-touch-enabled
+
+    A Boolean value that indicates whether the receiver handles
+    multi-touch events.
+
+- exclusive-touch
+
+    A Boolean value that indicates whether the receiver handles touch
+    events exclusively.
+
+- autoresizing-mask
+
+    An integer bit mask that determines how the receiver resizes
+    itself when its superview’s bounds change. Available values
+    include:
+
+    1. none
+    2. flexible-left-margin
+    3. flexible-width
+    4. flexible-right-margin
+    5. flexible-top-margin
+    6. flexible-height
+    7. flexible-bottom-margin
+
+- autoresizes-subviews
+
+    A Boolean value that determines whether the receiver automatically
+    resizes its subviews when its bounds change.
+
+- content-mode
+
+    A flag used to determine how a view lays out its content when its
+    bounds change.
+
+- content-stretch
+
+    The rectangle that defines the stretchable and nonstretchable
+    regions of a view. A rect value.
+
+- content-scale-factor
+
+    The scale factor applied to the view. This value is typically
+    either 1.0 or 2.0.
+
+### scroll
+
+`scroll` corresponds to UIScrollView in iOS.
+
+- content-offset
+
+    The point at which the origin of the content view is offset from
+    the origin of the scroll view. A point value.
+
+- content-size
+
+    The size of the content view. A size value.
+
+- content-inset
+
+    The distance that the content view is inset from the enclosing
+    scroll view. An edge-insets value.
+
+- scroll-enabled
+
+    A Boolean value that determines whether scrolling is enabled.
+
+- direction-lock-enabled
+
+    A Boolean value that determines whether scrolling is disabled in a
+    particular direction.
+
+- scroll-to-top
+
+    A Boolean value that controls whether the scroll-to-top gesture is
+    effective.
+
+- paging-enabled
+
+    A Boolean value that determines whether paging is enabled for the
+    scroll view.
+
+- bounces
+
+    A Boolean value that controls whether the scroll view bounces past
+    the edge of content and back again.
+
+- always-bounces-vertical
+
+    A Boolean value that determines whether bouncing always occurs
+    when vertical scrolling reaches the end of the content.
+
+- always-bounces-horizontal
+
+    A Boolean value that determines whether whether bouncing always
+    occurs when horizontal scrolling reaches the end of the content
+    view.
+
+- can-cancel-content-touches
+
+    A Boolean value that controls whether touches in the content view
+    always lead to tracking.
+
+- delays-content-touches
+
+    A Boolean value that determines whether the scroll view delays the
+    handling of touch-down gestures.
+
+- deceleration-rate
+
+    A floating-point value that determines the rate of deceleration
+    after the user lifts their finger.
+
+- indicator-style
+
+    The style of the scroll indicators. Available styles include:
+
+    1. default
+    2. black
+    3. white
+
+- scroll-indicator-insets
+
+    The distance the scroll indicators are inset from the edge of the
+    scroll view. A edge-insets value.
+
+- shows-horizontal-scroll-indicator
+
+    A Boolean value that controls whether the horizontal scroll
+    indicator is visible.
+
+- shows-vertical-scroll-indicator
+
+    A Boolean value that controls whether the vertical scroll
+    indicator is visible.
+
+- zoom-scale
+
+    A floating-point value that specifies the current scale factor
+    applied to the scroll view's content.
+
+- maximum-zoom-scale
+
+    A floating-point value that specifies the maximum scale factor
+    that can be applied to the scroll view's content.
+
+- minimum-zoom-scale
+
+    A floating-point value that specifies the minimum scale factor
+    that can be applied to the scroll view's content.
+
+- bounces-zoom
+
+    A Boolean value that determines whether the scroll view animates
+    the content scaling when the scaling exceeds the maximum or
+    minimum limits.
+
+### label
+
+`label` corresponds to UILabel in iOS.
+
+- text
+
+    The text displayed by the label. A string value.
+
+- font
+
+    The font of the text.
+
+- text-color
+
+    The color of the text.
+
+- text-alignment
+
+    The technique to use for aligning the text. Availabel values are:
+
+    1. left
+    2. center
+    3. right
+
+- line-break-mode
+
+    The technique to use for wrapping and truncating the label’s
+    text. Available modes are:
+
+    1. word-wrap
+    2. character-wrap
+    3. clip
+    4. head-truncation
+    5. tail-truncation
+    6. middle-truncation
+
+- enabled
+
+    The enabled state to use when drawing the label’s text.
+
+- adjusts-font-size-to-fit-width
+
+    A Boolean value indicating whether the font size should be reduced
+    in order to fit the title string into the label’s bounding
+    rectangle.
+
+- baseline-adjustment
+
+    Controls how text baselines are adjusted when text needs to shrink
+    to fit in the label. Available adjustments are:
+
+    1. align-baselines
+    2. align-centers
+    3. none
+
+- minimum-font-size
+
+    The size of the smallest permissible font with which to draw the
+    label’s text.
+
+- number-of-lines
+
+    The maximum number of lines to use for rendering text. A integer
+    value.
+
+- highlighted-text-color
+
+    The highlight color applied to the label’s text.
+
+- highlighted
+
+    A Boolean value indicating whether the receiver should be drawn
+    with a highlight.
+
+- shadow-color
+
+    The shadow color of the text.
+
+- shadow-offset
+
+    The shadow offset (measured in points) for the text. A size value.
+
+### button
+
+`button` corresponds to UIButton in iOS. It inherits from `control`
+and `view`.
+
+- reverses-title-shadow-when-highlighted
+
+    A Boolean value that determines whether the title shadow changes
+    when the button is highlighted.
+
+- title-for-state
+
+    Sets the title to use for the specified state. A pair of a string
+    and a control state. Available control states include:
+
+    1. normal
+    2. highlighted
+    3. disabled
+    4. selected
+    5. application
+    6. reserved
+
+- title-color-for-state
+
+    Sets the color of the title to use for the specified state. A pair
+    of a color and a control state. Available control states are same
+    as what in title-for-state.
+
+- title-shadow-color-for-state
+
+    Sets the color of the title shadow to use for the specified
+    state. The same type as in title-color-for-state.
+
+- adjusts-image-when-highlighted
+
+    A Boolean value that determines whether the image changes when the
+    button is highlighted.
+
+- adjusts-image-when-disabled
+
+    A Boolean value that determines whether the image changes when the
+    button is disabled.
+
+- shows-touch-when-highlighted
+
+    A Boolean value that determines whether tapping the button causes
+    it to glow.
+
+- background-image-for-state
+
+    Sets the background image to use for the specified button state. A
+    pair of a image and a control state. Available control states are
+    the same as in title-for-state.
+
+- image-for-state
+
+    Sets the image to use for the specified state. The parameter is
+    like what in background-image-for-state.
+
+- content-edge-insets
+
+    The inset or outset margins for the edges of the button content
+    drawing rectangle. An edge-insets value.
+
+- title-edge-insets
+
+    The inset or outset margins for the edges of the button title
+    drawing rectangle. An edge-insets value.
+
+- image-edge-insets
+
+    The inset or outset margins for the edges of the button image
+    drawing rectangle. An edge-insets value.
+
+### image
+- image
+- highlighted-image
+- animation-images
+- highlighted-animation-images
+- animation-duration
+- animation-repeat-count
+- user-interaction-enabled
+- highlighted
+- tint-color
+### slider
+- value
+- minimum-value
+- maximum-value
+- continuous
+- minimum-value-image
+- maximum-value-image
+- minimum-track-tint-color
+- minimum-track-image-for-state
+- maximum-track-tint-color
+- maximum-track-image-for-state
+- thumb-tint-color
+- thumb-image-for-state
+### segmented-control
+- items
+- selected-segment-index
+- momentary
+- segmented-control-style
+- apportions-segment-widths-by-content
+- tint-color
+- enabled-for-segment-at-index
+- content-offset-for-segment-at-index
+- width-for-segment-at-index
+- background-image-for-state-bar-metrics
+- content-position-adjustment-for-segment-type-bar-metrics
+- divider-image-for-left-segment-state-right-segment-state-bar-metrics
+- title-text-attributes-for-state
+### text-field
+- text
+- placeholder
+- font
+- text-color
+- text-alignment
+- adjusts-font-size-to-fit-width
+- minimum-font-size
+- clears-on-begin-editing
+- border-style
+- background
+- disabled-background
+- clear-button-mode
+- left-view
+- left-view-mode
+- right-view
+- right-view-mode
+- input-view
+- input-accessory-view
+### text-view
+- text
+- font
+- text-color
+- editable
+- data-detector-types
+- text-alignment
+- selected-range
+- input-view
+- input-accessory-view
 Resources
 ---------
 
