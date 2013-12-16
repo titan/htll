@@ -345,6 +345,8 @@
                                          (dsl-procedure-objects)
                                          env)))
     (define-variable! 'blank (blank) initial-env)
+    (define-variable! 'yes #t initial-env)
+    (define-variable! 'no #f initial-env)
     (set! the-current-environment initial-env)
     initial-env))
 
