@@ -157,11 +157,11 @@
 
 (define (generate-segment-type segment)
   (case segment
-    ((left) "UISegmentedControlSegmentAny")
-    ((center) "UISegmentedControlSegmentLeft")
-    ((right) "UISegmentedControlSegmentCenter")
-    ((alone) "UISegmentedControlSegmentRight")
-    (else "UISegmentedControlSegmentAlone")))
+    ((left) "UISegmentedControlSegmentLeft")
+    ((center) "UISegmentedControlSegmentCenter")
+    ((right) "UISegmentedControlSegmentRight")
+    ((alone) "UISegmentedControlSegmentAlone")
+    (else "UISegmentedControlSegmentAny")))
 
 (define (generate-text-field-border-style value)
   (case value
@@ -865,8 +865,7 @@
         (cons 'animation-duration generate-animation-duration)
         (cons 'animation-repeat-count generate-animation-repeat-count)
         (cons 'user-interaction-enabled generate-interaction-enabled)
-        (cons 'highlighted generate-highlighted)
-        (cons 'tint-color generate-tint-color)))
+        (cons 'highlighted generate-highlighted)))
 
 (define the-slider-attribute-generators
   (append the-view-attribute-generators

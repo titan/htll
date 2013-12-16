@@ -543,71 +543,363 @@ and `view`.
     drawing rectangle. An edge-insets value.
 
 ### image
+
+`image` corresponds to UIImageView in iOS.
+
 - image
+
+    The image displayed in the image view. A image-named value.
+
 - highlighted-image
+
+    The highlighted image displayed in the image view. A image-named
+    value.
+
 - animation-images
+
+    An array of image-named objects to use for an animation.
+
 - highlighted-animation-images
+
+    An array of image-named objects to use for an animation when the
+    view is highlighted.
+
 - animation-duration
+
+    The amount of time it takes to go through one cycle of the
+    images. A float value.
+
 - animation-repeat-count
+
+    Specifies the number of times to repeat the animation. A integer
+    value.
+
 - user-interaction-enabled
+
+    A Boolean value that determines whether user events are ignored
+    and removed from the event queue.
+
 - highlighted
-- tint-color
+
+    A Boolean value that determines whether the image is highlighted.
+
 ### slider
+
+`slider` corresponds to UISlider in iOS and inherits from `control`.
+
 - value
+
+    Contains the receiver’s current value. A float value.
+
 - minimum-value
+
+    Contains the minimum value of the receiver. A float value.
+
 - maximum-value
+
+    Contains the maximum value of the receiver. A float value.
+
 - continuous
+
+    Contains a Boolean value indicating whether changes in the sliders
+    value generate continuous update events.
+
 - minimum-value-image
+
+    Contains the image that is drawn on the side of the slider
+    representing the minimum value. A image-named value.
+
 - maximum-value-image
+
+    Contains the image that is drawn on the side of the slider
+    representing the maximum value. A image-named value.
+
 - minimum-track-tint-color
+
+    The color used to tint the standard minimum track images.
+
 - minimum-track-image-for-state
+
+    Assigns a minimum track image to the specified control states. A
+    pair of a image-named value and a control state value.
+
 - maximum-track-tint-color
+
+    The color used to tint the standard maximum track images.
+
 - maximum-track-image-for-state
+
+    Assigns a maximum track image to the specified control states. A
+    pair of a image-named value and a control state value.
+
 - thumb-tint-color
+
+    The color used to tint the standard thumb images.
+
 - thumb-image-for-state
+
+    Assigns a thumb image to the specified control states. A pair of a
+    image-named value and a control state value.
+
 ### segmented-control
+
+    `segmented-control` correspends to UISegmentedControl in iOS and
+    inherits from `control`.
+
 - items
+
+    Set given titles or images of segmented-control. A list of string
+    or image-named value.
+
 - selected-segment-index
+
+    The index number identifying the selected segment (that is, the
+    last segment touched).
+
 - momentary
+
+    A Boolean value that determines whether segments in the receiver
+    show selected state.
+
 - segmented-control-style
+
+    The style of the segmented control. Available styles include:
+
+    1. plain
+    2. bordered
+    3. bar
+    4. bezeled
+
 - apportions-segment-widths-by-content
+
+    A Boolean value that indicates whether the control attempts to
+    adjust segment widths based on their content widths.
+
 - tint-color
+
+    The tint color of the segmented control.
+
 - enabled-for-segment-at-index
+
+    Enables the specified segment. A pair of bool and integer value.
+
 - content-offset-for-segment-at-index
+
+    Adjusts the offset for drawing the content (image or text) of the
+    specified segment. A pair of size and integer value.
+
 - width-for-segment-at-index
+
+    Sets the width of the specified segment of the receiver. A pair of
+    float and integer value.
+
 - background-image-for-state-bar-metrics
+
+    Sets the background image for a given state and bar metrics. A
+    list with 3 elements: image-named, control state and bar metrics.
+    Available bar-metrics include:
+
+    1. default
+    2. landscape-phone
+
 - content-position-adjustment-for-segment-type-bar-metrics
+
+    Sets the content positioning offset for a given segment and bar
+    metrics. A list with 3 elements: offset, segment-type and
+    bar-metrics. Availabel segment-type include:
+
+    1. any
+    2. left
+    3. center
+    4. right
+    5. alone
+
 - divider-image-for-left-segment-state-right-segment-state-bar-metrics
+
+   Sets the divider image used for a given combination of left and
+   right segment states and bar metrics. A list with 4 elements:
+   image-named, left control state, right control state and
+   bar-metrics. Available bar-metrics include:
+
+    1. default
+    2. landscape-phone
+
 - title-text-attributes-for-state
+
+    Sets the text attributes of the title for a given control state. A
+    pair of assoication list and control state.
+
 ### text-field
+
+`text-field` corresponds to UITextField in iOS and inherits from
+`control`.
+
 - text
+
+    The text displayed by the text field. A string value.
+
 - placeholder
+
+    The string that is displayed when there is no other text in the
+    text field.
+
 - font
+
+    The font of the text.
+
 - text-color
+
+    The color of the text.
+
 - text-alignment
+
+    The technique to use for aligning the text. Available alignments
+    include:
+
+    1. left
+    2. center
+    3. right
+
 - adjusts-font-size-to-fit-width
+
+    A Boolean value indicating whether the font size should be reduced
+    in order to fit the text string into the text field’s bounding
+    rectangle.
+
 - minimum-font-size
+
+    The size of the smallest permissible font with which to draw the
+    text field’s text. A float value.
+
 - clears-on-begin-editing
+
+    A Boolean value indicating whether the text field removes old text
+    when editing begins.
+
 - border-style
+
+    The border style used by the text field. Available styles include:
+
+    1. none
+    2. line
+    3. bezel
+    4. rounded-rect
+
 - background
+
+    The image that represents the background appearance of the text
+    field when it is enabled. A image-named value.
+
 - disabled-background
+
+    The image that represents the background appearance of the text
+    field when it is disabled. A image-named value.
+
 - clear-button-mode
+
+    Controls when the standard clear button appears in the text
+    field. Available modes include:
+
+    1. never
+    2. while-editing
+    3. unless-editing
+    4. always
+
 - left-view
+
+    The overlay view displayed on the left side of the text field. A
+    view value.
+
 - left-view-mode
+
+    Controls when the left overlay view appears in the text field. Available modes include:
+
+    1. never
+    2. while-editing
+    3. unless-editing
+    4. always
+
 - right-view
+
+    The overlay view displayed on the right side of the text field. A
+    view value.
+
 - right-view-mode
+
+    Controls when the right overlay view appears in the text
+    field. Available modes include:
+
+    1. never
+    2. while-editing
+    3. unless-editing
+    4. always
+
 - input-view
+
+    The custom input view to display when the text field becomes the
+    first responder. A view value.
+
 - input-accessory-view
+
+    The custom accessory view to display when the text field becomes
+    the first responder. A view value.
+
 ### text-view
+
+    `text-view` corresponds to UITextView in iOS and inherits from
+    `scroll`.
+
 - text
+
+    The text displayed by the text view.
+
 - font
+
+    The font of the text.
+
 - text-color
+
+    The color of the text.
+
 - editable
+
+    A Boolean value indicating whether the receiver is editable.
+
 - data-detector-types
+
+    The types of data converted to clickable URLs in the text
+    view. Available types include:
+
+    1. none
+    2. phone-number
+    3. link
+    4. address
+    5. calendar-event
+    6. all
+
 - text-alignment
+
+    The technique to use for aligning the text. Available alignments
+    include:
+
+    1. left
+    2. center
+    3. right
+
 - selected-range
+
+    The current selection range of the receiver. A range value.
+
 - input-view
+
+    The custom input view to display when the text view becomes the
+    first responder. A view value.
+
 - input-accessory-view
+
+    The custom accessory view to display when the text view becomes
+    the first responder. A view value.
+
 Resources
 ---------
 
