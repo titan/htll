@@ -29,6 +29,12 @@ Now, it's ready to make it by running `make` command. `htllc`(htll
 compiler) is the product of building. It's a single file program, no
 home, can be deployed to /usr/local/bin/ easily.
 
+Sample
+------
+
+There is an iOS5 [project]("https://github.com/titan/GearCalc") which
+demonstrates how to write an iOS App with HTLL.
+
 Layout Primitives
 -----------------
 
@@ -1025,10 +1031,9 @@ image object is not already in the cache, this method loads the image
 data from the specified file, caches it, and then returns the
 resulting object.
 
-Sample
-------
-
 Further Work
 ------------
 
 1. Support iOS5, iOS6 and iOS7
+2. Research more effective layout method
+3. Support more view type
