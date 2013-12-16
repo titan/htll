@@ -199,6 +199,18 @@
       (list 'font name size)
       (error "Invalid font" name size)))
 
+(define (label-font-size)
+  (list 'label-font-size))
+
+(define (button-font-size)
+  (list 'button-font-size))
+
+(define (small-system-font-size)
+  (list 'small-system-font-size))
+
+(define (system-font-size)
+  (list 'system-font-size))
+
 (define (image-named name)
   (if (string? name)
       (list 'image-named name)
@@ -328,6 +340,10 @@
         (list 'system-font-of-size system-font-of-size)
         (list 'bold-system-font-of-size bold-system-font-of-size)
         (list 'italic-system-font-of-size italic-system-font-of-size)
+        (list 'label-font-size label-font-size)
+        (list 'button-font-size button-font-size)
+        (list 'small-system-font-size small-system-font-size)
+        (list 'system-font-size system-font-size)
         (list 'size size)
         (list 'rect rect)
         (list 'edge-insets edge-insets)

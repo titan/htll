@@ -127,6 +127,17 @@
     (string-append "[UIFont italicSystemFontOfSize:" (cadr value) "]"))
    (else (error "Invalid font " value))))
 
+(define (generate-font-size value)
+  (cond
+   ((number? value) (number->string value))
+   ((custom-value? value)
+    (case (car value)
+      ((label-font-size) "[UIFont labelFontSize]")
+      ((button-font-size) "[UIFont buttonFontSize]")
+      ((small-system-font-size) "[UIFont smallSystemFontSize]")
+      (else "[UIFont systemFontSize]")))
+   (else (error "Invalid font size" value))))
+
 (define (generate-array value)
   (let loop ((array value)
              (result "[NSArray arrayWithObjects:"))
@@ -496,9 +507,7 @@
       (invalid-data-type-error var "baselineAdjustment" "align-baselines/align-centers/none" value)))
 
 (define (generate-minimum-font-size var value)
-  (if (number? value)
-      (string-append var ".minimumFontSize = " (number->string value) ";")
-      (invalid-data-type-error var "minimumFontSize" 'number value)))
+  (string-append var ".minimumFontSize = " (generate-font-size value) ";"))
 
 (define (generate-number-of-lines var value)
   (if (integer? value)
