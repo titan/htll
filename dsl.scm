@@ -418,7 +418,9 @@
           (let ((generator (assq (car attr) generators)))
             (if generator
                 (begin
-                  (display ((cdr generator) (symbol->string var) (cdr attr)))
+                  (if (caddr generator)
+                      (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
+                      (display ((cadr generator) (symbol->string var) (cdr attr))))
                   (newline))
                 (error "Invalid attribute" (car attr) "for" var)))
           (loop (cdr attrs)))))))

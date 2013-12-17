@@ -3,10 +3,7 @@
        (> (length value) 0)
        (symbol? (car value))))
 
-(define (invalid-data-type-error var attr want got)
-  (error "Invalid data type for " (string->symbol (string-append var "." attr)) "want" want "got" got))
-
-(define (fake-generate var value) 'ok)
+(define (fake-generate var value) "")
 
 (define (generate-bool value)
   (if (boolean? value)
@@ -14,11 +11,7 @@
       (error "Invalid boolean type" value)))
 
 (define (generate-assign-bool var attr value)
-  (if (boolean? value)
-      (if value
-          (string-append var "." attr " = YES;")
-          (string-append var "." attr " = NO;"))
-      (invalid-data-type-error var attr "true/false" value)))
+  (string-append var "." attr " = " (generate-bool value) ";"))
 
 (define (generate-float value)
   (if (real? value)
@@ -26,9 +19,15 @@
       (error "Invalid float type" value)))
 
 (define (generate-assign-float var attr value)
-  (if (real? value)
-      (string-append var "." attr " = " (generate-float value) ";")
-      (invalid-data-type-error var attr "float" value)))
+  (string-append var "." attr " = " (generate-float value) ";"))
+
+(define (generate-integer value)
+  (if (integer? value)
+      (number->string value)
+      (error "Invalid integer type" value)))
+
+(define (generate-assign-integer var attr value)
+  (string-append var "." attr " = " (generate-integer value) ";"))
 
 (define (generate-number value)
   (if (number? value)
@@ -36,19 +35,23 @@
       (error "Invalid number type" value)))
 
 (define (generate-assign-number var attr value)
-  (if (number? value)
-      (string-append var "." attr " = " (generate-number value) ";")
-      (invalid-data-type-error var attr "number" value)))
+  (string-append var "." attr " = " (generate-number value) ";"))
 
 (define (generate-size value)
   (if (and (custom-value? value) (= (length value) 3) (eq? 'size (car value)) (number? (cadr value)) (number? (caddr value)))
       (string-append "(CGSize) {" (cadr value) ", " (caddr value) "}")
       (error "Invalid size type" value)))
 
-(define (generate-rect var attr value)
+(define (generate-assign-size var attr value)
+  (string-append var "." attr " = " (generate-size value)))
+
+(define (generate-rect value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'rect (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
-      (string-append var "." attr " = (CGRect) {" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) "};")
-      (invalid-data-type-error var attr "rect" value)))
+      (string-append "(CGRect) {" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) "}")
+      (error "Invalid rect type" value)))
+
+(define (generate-assign-rect var attr value)
+  (string-append var "." attr " = " (generate-rect value) ";"))
 
 (define (generate-offset value)
   (if (and (custom-value? value) (= (length value) 3) (eq? 'offset (car value)) (number? (cadr value)) (number? (caddr value)))
@@ -57,6 +60,9 @@
         (string-append "UIOffsetMake(" h ", " v ")"))
       (error "Invalid offset type" value)))
 
+(define (generate-assign-offset var attr value)
+  (string-append var "." attr " = " (generate-offset value) ";"))
+
 (define (generate-range value)
   (if (and (custom-value? value) (= (length value) 3) (eq? 'range (car value)) (number? (cadr value)) (number? (caddr value)))
       (let ((loc (number->string (cadr value)))
@@ -64,15 +70,16 @@
         (string-append "NSRangeMake(" loc ", " len ")"))
       (error "Invalid range type" value)))
 
+(define (generate-assign-range var attr value)
+  (string-append var "." attr " = " (generate-range value)))
+
 (define (generate-edge-insets value)
   (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
       (string-append "UIEdgeInsetsMake(" (cadr value) ", " (caddr value) ", " (cadddr value) ", " (car (cddddr value)) ")")
       (error "Invalid edge-insets type" value)))
 
 (define (generate-assign-edge-insets var attr value)
-  (if (and (custom-value? value) (= (length value) 5) (eq? 'edge-insets (car value)) (number? (cadr value)) (number? (caddr value)) (number? (cadddr value)) (number? (car (cddddr value))))
-      (string-append var "." attr " = " (generate-edge-insets value) ";")
-      (invalid-data-type-error var attr "edge-insets" value)))
+  (string-append var "." attr " = " (generate-edge-insets value) ";"))
 
 (define (generate-image-named value)
   (if (and (custom-value? value) (eq? 'image-named (car value)))
@@ -127,6 +134,9 @@
     (string-append "[UIFont italicSystemFontOfSize:" (cadr value) "]"))
    (else (error "Invalid font " value))))
 
+(define (generate-assign-font var attr value)
+  (string-append var "." attr " = " (generate-font value) ";"))
+
 (define (generate-font-size value)
   (cond
    ((number? value) (number->string value))
@@ -137,6 +147,9 @@
       ((small-system-font-size) "[UIFont smallSystemFontSize]")
       (else "[UIFont systemFontSize]")))
    (else (error "Invalid font size" value))))
+
+(define (generate-assign-font-size var attr value)
+  (string-append var "." attr " = " (generate-font-size value) ";"))
 
 (define (generate-array value)
   (let loop ((array value)
@@ -211,6 +224,9 @@
             (error "Cannot find view refered to " ref)))
       (error "Invalid view type" value)))
 
+(define (generate-assign-view-ref var attr value)
+  (string-append var "." attr " = " (generate-view-ref value) ";"))
+
 (define the-predefined-colors
   (list (cons 'black-color "blackColor")
         (cons 'darkGray-color "darkGrayColor")
@@ -264,272 +280,128 @@
             (string-append "[" var " " fun ":" (generate-color color) " forState:" (generate-control-state state) "];")))
       (error (string-append "Invalid data type for [" var " " fun ":forState:]") value)))
 
-(define (generate-background-color var value)
-  (generate-assign-color var "backgroundColor" value))
-
-(define (generate-enabled var value)
-  (generate-assign-bool var "enabled" value))
-
-(define (generate-selected var value)
-  (generate-assign-bool var "selected" value))
-
-(define (generate-hidden var value)
-  (generate-assign-bool var "hidden" value))
-
-(define (generate-alpha var value)
-  (generate-assign-float var "alpha" value))
-
-(define (generate-opaque var value)
-  (generate-assign-bool var "opaque" value))
-
-(define (generate-clips-to-bounds var value)
-  (generate-assign-bool var "clipsToBounds" value))
-
-(define (generate-clears-context-before-drawing var value)
-  (generate-assign-bool var "clearsContextBeforeDrawing" value))
-
-(define (generate-user-interaction-enabled var value)
-  (generate-assign-bool var "userInteractionEnabled" value))
-
-(define (generate-multiple-touch-enabled var value)
-  (generate-assign-bool var "multipleTouchEnabled" value))
-
-(define (generate-exclusive-touch var value)
-  (generate-assign-bool var "exclusiveTouch" value))
-
-(define the-predefined-autoresizings
-  (list (cons 'none "UIViewAutoresizingNone")
-        (cons 'flexible-left-margin "UIViewAutoresizingFlexibleLeftMargin")
-        (cons 'flexible-width "UIViewAutoresizingFlexibleWidth")
-        (cons 'flexible-right-margin "UIViewAutoresizingFlexibleRightMargin")
-        (cons 'flexible-top-margin "UIViewAutoresizingFlexibleTopMargin")
-        (cons 'flexible-height "UIViewAutoresizingFlexibleHeight")
-        (cons 'flexible-bottom-margin "UIViewAutoresizingFlexibleBottomMargin")))
-
-(define (generate-autoresizing-mask var value)
+(define (generate-autoresizing-mask value)
   (if (symbol? value)
-      (let ((autoresizing (assq value the-predefined-autoresizings)))
-        (if autoresizing
-            (string-append var ".autoresizingMask = " (cdr autoresizing) ";")
-            (error "Unknown autoresizing mask" value)))
-      (invalid-data-type-error var "autoresizingMask" "none/flexible-left-margin/flexible-width/flexible-right-margin/flexible-top-margin/flexible-height/flexible-bottom-margin" value)))
+      (case value
+        ((flexible-left-margin) "UIViewAutoresizingFlexibleLeftMargin")
+        ((flexible-width) "UIViewAutoresizingFlexibleWidth")
+        ((flexible-right-margin) "UIViewAutoresizingFlexibleRightMargin")
+        ((flexible-top-margin) "UIViewAutoresizingFlexibleTopMargin")
+        ((flexible-height) "UIViewAutoresizingFlexibleHeight")
+        ((flexible-bottom-margin) "UIViewAutoresizingFlexibleBottomMargin")
+        (else "UIViewAutoresizingNone"))
+      (error "Unknown autoresizing mask" value)))
 
-(define (generate-autoresizes-subviews var value)
-  (generate-assign-bool var "autoresizesSubviews" value))
+(define (generate-assign-autoresizing-mask var attr value)
+  (string-append var "." attr " = " (generate-autoresizing-mask value) ";"))
 
-(define the-predefined-content-modes
-  (list (cons 'scale-to-fill "UIViewContentModeScaleToFill")
-        (cons 'scale-aspect-fit "UIViewContentModeScaleAspectFit")
-        (cons 'scale-aspect-fill "UIViewContentModeScaleAspectFill")
-        (cons 'redraw "UIViewContentModeRedraw")
-        (cons 'center "UIViewContentModeCenter")
-        (cons 'top "UIViewContentModeTop")
-        (cons 'bottom "UIViewContentModeBottom")
-        (cons 'left "UIViewContentModeLeft")
-        (cons 'right "UIViewContentModeRight")
-        (cons 'top-left "UIViewContentModeTopLeft")
-        (cons 'top-right "UIViewContentModeTopRight")
-        (cons 'bottom-left "UIViewContentModeBottomLeft")
-        (cons 'bottom-right "UIViewContentModeBottomRight")))
-
-(define (generate-content-mode var value)
+(define (generate-content-mode value)
   (if (symbol? value)
-      (let ((content-mode (assq value the-predefined-content-modes)))
-        (if content-mode
-            (string-append var ".contentMode = " (cdr content-mode) ";")
-            (error "Unknown content mode" value)))
-      (invalid-data-type-error var "contentMode" "scale-to-fill/scale-aspect-fit/scale-aspect-fill/redraw/center/top/bottom/left/right/top-left/top-right/bottom-left/bottom-right" value)))
+      (case value
+        ((scale-to-fill) "UIViewContentModeScaleToFill")
+        ((scale-aspect-fit) "UIViewContentModeScaleAspectFit")
+        ((scale-aspect-fill) "UIViewContentModeScaleAspectFill")
+        ((redraw) "UIViewContentModeRedraw")
+        ((center) "UIViewContentModeCenter")
+        ((top) "UIViewContentModeTop")
+        ((bottom) "UIViewContentModeBottom")
+        ((left) "UIViewContentModeLeft")
+        ((right) "UIViewContentModeRight")
+        ((top-left) "UIViewContentModeTopLeft")
+        ((top-right) "UIViewContentModeTopRight")
+        ((bottom-left) "UIViewContentModeBottomLeft")
+        ((bottom-right) "UIViewContentModeBottomRight"))
+      (error "Unknown content mode" value)))
 
-(define (generate-content-stretch var value)
-  (generate-rect var "contentStretch" value))
+(define (generate-assign-content-mode var attr value)
+  (string-append var "." attr " = " (generate-content-mode value)))
 
-(define (generate-content-scale-factor var value)
-  (generate-assign-float var "contentScaleFactor" value))
-
-(define the-predefined-content-vertical-alignments
-  (list (cons 'center "UIControlContentVerticalAlignmentCenter")
-        (cons 'top "UIControlContentVerticalAlignmentTop")
-        (cons 'bottom "UIControlContentVerticalAlignmentBottom")
-        (cons 'fill "UIControlContentVerticalAlignmentFill")))
-
-(define (generate-content-vertical-alignment var value)
+(define (generate-content-vertical-alignment value)
   (if (symbol? value)
-      (let ((alignment (assq value the-predefined-content-vertical-alignments)))
-        (if alignment
-            (string-append var ".contentVerticalAlignment = " (cdr alignment) ";")
-            (error "Unknown content vertical alignment" value)))
-      (invalid-data-type-error var "contentVerticalAlignment" "center/top/bottom/fill" value)))
+      (case value
+        ((center) "UIControlContentVerticalAlignmentCenter")
+        ((top) "UIControlContentVerticalAlignmentTop")
+        ((bottom) "UIControlContentVerticalAlignmentBottom")
+        ((fill) "UIControlContentVerticalAlignmentFill")
+        (else (error "Unknown content vertical alignment" value)))
+      (error "Unknown content vertical alignment" value)))
 
-(define the-predefined-content-horizontal-alignments
-  (list (cons 'center "UIControlContentHorizontalAlignmentCenter")
-        (cons 'left "UIControlContentHorizontalAlignmentLeft")
-        (cons 'right "UIControlContentHorizontalAlignmentRight")
-        (cons 'fill "UIControlContentHorizontalAlignmentFill")))
+(define (generate-assign-content-vertical-alignment var attr value)
+  (string-append var "." attr " = " (generate-content-vertical-alignment value) ";"))
 
-(define (generate-content-horizontal-alignment var value)
+(define (generate-content-horizontal-alignment value)
   (if (symbol? value)
-      (let ((alignment (assq value the-predefined-content-horizontal-alignments)))
-        (if alignment
-            (string-append var ".contentHorizontalAlignment = " (cdr alignment) ";")
-            (error "Unknown content horizontal alignment" value)))
-      (invalid-data-type-error var "contentHorizontalAlignment" "center/top/bottom/fill" value)))
+      (case value
+        ((center) "UIControlContentHorizontalAlignmentCenter")
+        ((left) "UIControlContentHorizontalAlignmentLeft")
+        ((right) "UIControlContentHorizontalAlignmentRight")
+        ((fill) "UIControlContentHorizontalAlignmentFill")
+        (else (error "Unknown content horizontal alignment" value)))
+      (error "Unknown content horizontal alignment" value)))
 
-(define (generate-content-offset var value)
-  (string-append var ".contentOffset = " (generate-offset value) ";"))
+(define (generate-assign-content-horizontal-alignment var attr value)
+  (string-append var "." attr " = " (generate-content-horizontal-alignment value) ";"))
 
-(define (generate-content-size var value)
-  (string-append var ".contentSize = " (generate-size value) ";"))
+(define (generate-assign-indicator-style var attr value)
+  (string-append var "." attr " = " (generate-scroll-indicator-style value) ";"))
 
-(define (generate-content-inset var value)
-  (generate-assign-edge-insets var "contentInset" value))
-
-(define (generate-scroll-enabled var value)
-  (generate-assign-bool var "scrollEnabled" value))
-
-(define (generate-direction-lock-enabled var value)
-  (generate-assign-bool var "directionLockEnabled" value))
-
-(define (generate-scroll-to-top var value)
-  (generate-assign-bool var "scrollToTop" value))
-
-(define (generate-paging-enabled var value)
-  (generate-assign-bool var "pagingEnabled" value))
-
-(define (generate-bounces var value)
-  (generate-assign-bool var "bounces" value))
-
-(define (generate-always-bounces-vertical var value)
-  (generate-assign-bool var "alwaysBouncesVertical" value))
-
-(define (generate-always-bounces-horizontal var value)
-  (generate-assign-bool var "alwaysBouncesHorizontal" value))
-
-(define (generate-can-cancel-content-touches var value)
-  (generate-assign-bool var "canCancelContentTouches" value))
-
-(define (generate-delays-content-touches var value)
-  (generate-assign-bool var "delaysContentTouches" value))
-
-(define (generate-deceleration-rate var value)
-  (generate-assign-float var "decelerationRate" value))
-
-(define (generate-indicator-style var value)
-  (string-append var ".indicatorStyle = " (generate-scroll-indicator-style value) ";"))
-
-(define (generate-scroll-indicator-insets var value)
-  (generate-assign-edge-insets var "scrollIndicator" value))
-
-(define (generate-shows-horizontal-scroll-indicator var value)
-  (generate-assign-bool var "showsHorizontalScrollIndicator" value))
-
-(define (generate-shows-vertical-scroll-indicator var value)
-  (generate-assign-bool var "showsVerticalScrollIndicator" value))
-
-(define (generate-zoom-scale var value)
-  (generate-assign-float var "zoomScale" value))
-
-(define (generate-maximum-zoom-scale var value)
-  (generate-assign-float var "maximumZoomScale" value))
-
-(define (generate-minimum-zoom-scale var value)
-  (generate-assign-float var "minimumZoomScale" value))
-
-(define (generate-bounces-zoom var value)
-  (generate-assign-bool var "bouncesZoom" value))
-
-(define (generate-text var value)
-  (generate-assign-string var "text" value))
-
-(define (generate-assign-font var value)
-  (string-append var ".font = " (generate-font value) ";"))
-
-(define (generate-text-color var value)
-  (generate-assign-color var "textColor" value))
-
-(define the-ios5-predefined-text-alignments
-  (list (cons 'left "UITextAlignmentLeft")
-        (cons 'center "UITextAlignmentCenter")
-        (cons 'right "UITextAlignmentRight")))
-
-(define the-predefined-text-alignments
-  (list (cons 'left "NSTextAlignmentLeft")
-        (cons 'center "NSTextAlignmentCenter")
-        (cons 'right "NSTextAlignmentRight")))
-
-(define (generate-text-alignment var value)
+(define (generate-text-alignment value)
   (if (symbol? value)
-      (let ((predefined (if (eq? ios-version 'ios5) the-ios5-predefined-text-alignments the-predefined-text-alignments)))
-        (let ((alignment (assq value predefined)))
-          (if alignment
-              (string-append var ".textAlignment = " (cdr alignment) ";")
-              (error "Unknown text alignment" value))))
-      (invalid-data-type-error var "textAlignment" "left/center/right" value)))
+      (if (eq? ios-version 'ios5)
+          (case value
+            ((left) "UITextAlignmentLeft")
+            ((center) "UITextAlignmentCenter")
+            ((right) "UITextAlignmentRight")
+            (else (error "Unknown text alignment" value)))
+          (case value
+            ((left) "NSTextAlignmentLeft")
+            ((center) "NSTextAlignmentCenter")
+            ((right) "NSTextAlignmentRight")
+            (else (error "Unknown text alignment" value))))
+      (error "Unknown text alignment" value)))
 
-(define the-ios5-predefined-line-break-modes
-  (list (cons 'word-wrap "UILineBreakModeWordWrap")
-        (cons 'character-wrap "UILineBreakModeCharacterWrap")
-        (cons 'clip "UILineBreakModeClip")
-        (cons 'head-truncation "UILineBreakModeHeadTruncation")
-        (cons 'tail-truncation "UILineBreakModeTailTruncation")
-        (cons 'middle-truncation "UILineBreakModeMiddleTruncation")))
+(define (generate-assign-text-alignment var attr value)
+  (string-append var "." attr " = " (generate-text-alignment value) ";"))
 
-(define the-predefined-line-break-modes
-  (list (cons 'word-wrap "NSLineBreakModeWordWrap")
-        (cons 'character-wrap "NSLineBreakModeCharacterWrap")
-        (cons 'clip "NSLineBreakModeClip")
-        (cons 'head-truncation "NSLineBreakModeHeadTruncation")
-        (cons 'tail-truncation "NSLineBreakModeTailTruncation")
-        (cons 'middle-truncation "NSLineBreakModeMiddleTruncation")))
-
-(define (generate-line-break-mode var value)
+(define (generate-link-break-mode value)
   (if (symbol? value)
-      (let ((predefined (if (eq? ios-version 'ios5) the-ios5-predefined-line-break-modes the-predefined-line-break-modes)))
-        (let ((line-break (assq value predefined)))
-          (if line-break
-              (string-append var ".lineBreakMode = " (cdr line-break) ";")
-              (error "Unknow line break mode" value))))
-      (invalid-data-type-error var "lineBreakMode" "word-wrap/character-wrap/clip/head-truncation/tail-truncation/middle-truncation" value)))
+      (if (eq? ios-version 'ios5)
+          (case value
+            ((word-wrap) "UILineBreakModeWordWrap")
+            ((character-wrap) "UILineBreakModeCharacterWrap")
+            ((clip) "UILineBreakModeClip")
+            ((head-truncation) "UILineBreakModeHeadTruncation")
+            ((tail-truncation) "UILineBreakModeTailTruncation")
+            ((middle-truncation) "UILineBreakModeMiddleTruncation")
+            (else (error "Invalid link break mode" value)))
+          (case value
+            ((word-wrap) "NSLineBreakModeWordWrap")
+            ((character-wrap) "NSLineBreakModeCharacterWrap")
+            ((clip) "NSLineBreakModeClip")
+            ((head-truncation) "NSLineBreakModeHeadTruncation")
+            ((tail-truncation) "NSLineBreakModeTailTruncation")
+            ((middle-truncation) "NSLineBreakModeMiddleTruncation")
+            (else (error "Invalid link break mode" value))))
+      (error "Invalid link break mode" value)))
 
-(define (generate-adjusts-font-size-to-fit-width var value)
-  (generate-assign-bool var "adjustsFontSizeToFitWidth" value))
+(define (generate-assign-line-break-mode var attr value)
+  (string-append var "." attr " = " value ";"))
 
 (define the-predefined-baseline-adjustments
   (list (cons 'align-baselines "UIBaselineAdjustmentAlignBaselines")
         (cons 'align-centers "UIBaselineAdjustmentAlignCenters")
         (cons 'none "UIBaselineAdjustmentNone")))
 
-(define (generate-baseline-adjustment var value)
+(define (generate-baseline-adjustment value)
   (if (symbol? value)
-      (let ((baseline-adjustment (assq value the-predefined-baseline-adjustments)))
-        (if baseline-adjustment
-            (string-append var ".baselineAdjustment = " (cdr baseline-adjustment) ";")
-            (error "Unknown baseline adjustment" value)))
-      (invalid-data-type-error var "baselineAdjustment" "align-baselines/align-centers/none" value)))
+      (case value
+        ((align-baselines) "UIBaselineAdjustmentAlignBaselines")
+        ((align-centers) "UIBaselineAdjustmentAlignCenters")
+        (else "UIBaselineAdjustmentNone"))
+      (error "Invalid baseline adjustment" value)))
 
-(define (generate-minimum-font-size var value)
-  (string-append var ".minimumFontSize = " (generate-font-size value) ";"))
-
-(define (generate-number-of-lines var value)
-  (if (integer? value)
-      (string-append var ".numberOfLines = " (number->string value) ";")
-      (invalid-data-type-error var "numberOfLines" 'integer value)))
-
-(define (generate-highlighted-text-color var value)
-  (generate-assign-color var "highlightedTextColor" value))
-
-(define (generate-highlighted var value)
-  (generate-assign-bool var "highlighted" value))
-
-(define (generate-shadow-color var value)
-  (generate-assign-color var "shadowColor" value))
-
-(define (generate-shadow-offset var value)
-  (if (and (custom-value? value) (tagged-list? value 'size) (= 3 (length value)) (number? (cadr value)) (number? (caddr value)))
-      (string-append var ".shadowOffset = (CGSize) {" (number->string (cadr value)) ", " (number->string (caddr value)) "};")
-      (invalid-data-type-error var "shadowOffset" "size" value)))
-
-(define (generate-reverses-title-shadow-when-highlighted var value)
-  (generate-assign-bool var "reversesTitleShadowWhenHighlighted" value))
+(define (generate-assign-baseline-adjustment var attr value)
+  (string-append var "." attr " = " (generate-baseline-adjustment value) ";"))
 
 (define (generate-title-for-state var value)
   (if (and (pair? value) (string? (car value)) (symbol? (cdr value)))
@@ -538,135 +410,36 @@
         (string-append "[" var " setTitle:" (generate-string title) " forState:" (generate-control-state state) "];"))
       (error (string-append "Invalid data type for [" var " setTitle:forState:]") value)))
 
-(define (generate-title-color-for-state var value)
-  (generate-set-color-for-state var "setTitleColor" value))
-
-(define (generate-title-shadow-color-for-state var value)
-  (generate-set-color-for-state var "setTitleShadowColor" value))
-
-(define (generate-adjusts-image-when-highlighted var value)
-  (generate-assign-bool var "adjustsImageWhenHighlighted" value))
-
-(define (generate-adjusts-image-when-disabled var value)
-  (generate-assign-bool var "adjustsImageWhenDisabled" value))
-
-(define (generate-shows-touch-when-highlighted var value)
-  (generate-assign-bool var "showsTouchWhenHighlighted" value))
-
-(define (generate-background-image-for-state var value)
-  (generate-set-image-for-state var "setBackgroundImage" value))
-
-(define (generate-image-for-state var value)
-  (generate-set-image-for-state var "setImage" value))
-
-(define (generate-content-edge-insets var value)
-  (generate-assign-edge-insets var "contentEdgeInsets" value))
-
-(define (generate-title-edge-insets var value)
-  (generate-assign-edge-insets var "titleEdgeInsets" value))
-
-(define (generate-image-edge-insets var value)
-  (generate-assign-edge-insets var "imageEdgeInsets" value))
-
-(define (generate-image var value)
-  (generate-assign-image var "image" value))
-
-(define (generate-highlighted-image var value)
-  (generate-assign-image var "highlightedImage" value))
-
-(define (generate-animation-images var value)
+(define (generate-assign-images var attr value)
   (let loop ((array value)
              (result '()))
     (if (null? array)
-        (string-append var ".animationImages = " (generate-array result) ";")
+        (string-append var "." attr " = " (generate-array result) ";")
         (let ((ref (lookup-variable-by-value-ignoring-root (car array))))
           (if ref
               (loop (cdr array) (cons (symbol->string ref) result))
               (loop (cdr array) (cons (generate-image-named (car array)) result)))))))
-
-(define (generate-highlighted-animation-images var value)
- (let loop ((array value)
-             (result '()))
-    (if (null? array)
-        (string-append var ".highlightedAnimationImages = " (generate-array result) ";")
-        (let ((ref (lookup-variable-by-value-ignoring-root (car array))))
-          (if ref
-              (loop (cdr array) (cons (symbol->string ref) result))
-              (loop (cdr array) (cons (generate-image-named (car array)) result)))))))
-
-(define (generate-animation-duration var value)
-  (generate-assign-float var "animationDuration" value))
-
-(define (generate-animation-repeat-count var value)
-  (generate-assign-number var "animationRepeatCount" value))
-
-(define (generate-interaction-enabled var value)
-  (generate-assign-bool var "interactionEnabled" value))
-
-(define (generate-highlighted var value)
-  (generate-assign-bool var "highlighted" value))
-
-(define (generate-tint-color var value)
-  (generate-assign-color var "tintColor" value))
-
-(define (generate-value var value)
-  (generate-assign-number var "value" value))
-
-(define (generate-minimum-value var value)
-  (generate-assign-number var "minimumValue" value))
-
-(define (generate-maximum-value var value)
-  (generate-assign-number var "maximumValue" value))
-
-(define (generate-continuous var value)
-  (generate-assign-bool var "continuous" value))
-
-(define (generate-minimum-value-image var value)
-  (generate-assign-image var "minimumValueImage" value))
-
-(define (generate-maximum-value-image var value)
-  (generate-assign-image var "maximumValueImage" value))
-
-(define (generate-minimum-track-tint-color var value)
-  (generate-assign-color var "minimumTrackTintColor" value))
 
 (define (generate-minimum-track-image-for-state var value)
   (generate-set-image-for-state var "setMinimumTrackImage" value))
 
-(define (generate-maximum-track-tint-color var value)
-  (generate-assign-color var "maximumTrackTintColor" value))
-
 (define (generate-maximum-track-image-for-state var value)
   (generate-set-image-for-state var "setMaximumTrackImage" value))
-
-(define (generate-thumb-tint-color var value)
-  (generate-assign-color var "thumbTintColor" value))
 
 (define (generate-thumb-image-for-state var value)
   (generate-set-image-for-state var "setThumbImage" value))
 
-(define (generate-selected-segment-index var value)
-  (generate-assign-number var "selectedSegmentIndex" value))
-
-(define (generate-momentary var value)
-  (generate-assign-bool var "momentary" value))
-
-(define the-predefined-segmented-control-style
-  (list (cons 'plain "UISegmentedControlStylePlain")
-        (cons 'bordered "UISegmentedControlStyleBordered")
-        (cons 'bar "UISegmentedControlStyleBar")
-        (cons 'bezeled "UISegmentedControlStyleBezeled")))
-
-(define (generate-segmented-control-style var value)
+(define (generate-segmented-control-style value)
   (if (symbol? value)
-      (let ((style (assq value the-predefined-segmented-control-style)))
-        (if style
-            (string-append var ".segmentedControlStyle = " (cdr style) ";")
-            (error "Unknown segmented control style" value)))
-      (invalid-data-type-error var "segmented-control-style" "plain/bordered/bar/bezeled" value)))
+      (case value
+        ((bordered) "UISegmentedControlStyleBordered")
+        ((bar) "UISegmentedControlStyleBar")
+        ((bezeled) "UISegmentedControlStyleBezeled")
+        (else "UISegmentedControlStylePlain"))
+      (error "Invalid segmented control style" value)))
 
-(define (generate-apportions-segment-widths-by-content var value)
-  (generate-assign-bool var "apportionsSegmentWidthsByContent" value))
+(define (generate-assign-segmented-control-style var attr value)
+  (string-append var "." attr " = " (generate-segmented-control-style value) ";"))
 
 (define (generate-enabled-for-segment-at-index var value)
   (if (and (pair? value) (boolean? (car value)) (number? (cdr value)))
@@ -722,223 +495,182 @@
                    (result '()))
           (if (null? as)
               (string-append "[" var " setTitleTextAttributes:" (generate-dictionary result) " forState:" (generate-control-state state) "];")
-              (loop (cdr as) (cons (cond
-                                    ((eq? 'font (caar as))
-                                     (cons "UITextAttributeFont" (generate-font (cdar as))))
-                                    ((eq? 'text-color (caar as))
-                                     (cons "UITextAttributeTextColor" (generate-color (cdar as))))
-                                    ((eq? 'text-shadow-color (caar as))
-                                     (cons "UITextAttributeTextShadowColor" (generate-color (cdar as))))
-                                    ((eq? 'text-shadow-offset (caar as))
-                                     (cons "UITextAttributeTextShadowOffset" (generate-offset (cdar as))))
-                                    (else (error "Unknown text attributes" (caar as))))
-                                   result)))))
+              (loop (cdr as)
+                    (cons (cond
+                           ((eq? 'font (caar as))
+                            (cons "UITextAttributeFont" (generate-font (cdar as))))
+                           ((eq? 'text-color (caar as))
+                            (cons "UITextAttributeTextColor" (generate-color (cdar as))))
+                           ((eq? 'text-shadow-color (caar as))
+                            (cons "UITextAttributeTextShadowColor" (generate-color (cdar as))))
+                           ((eq? 'text-shadow-offset (caar as))
+                            (cons "UITextAttributeTextShadowOffset" (generate-offset (cdar as))))
+                           (else (error "Unknown text attributes" (caar as))))
+                          result)))))
       (error (string-append "Invalid data type for [" var " setTitleTextAttributes:forState:];") value)))
 
-(define (generate-placeholder var value)
-  (generate-assign-string var "placeholder" value))
-
-(define (generate-minimum-font-size var value)
-  (generate-assign-float var "minimumFontSize" value))
-
-(define (generate-clears-on-begin-editing var value)
-  (generate-assign-bool var "clearsOnBeginEditing" value))
-
-(define (generate-border-style var value)
-  (string-append var ".borderStyle = " (generate-text-field-border-style value) ";"))
-
-(define (generate-background var value)
-  (generate-assign-image var "background" value))
-
-(define (generate-disabled-background var value)
-  (generate-assign-image var "disabledBackground" value))
+(define (generate-assign-border-style var attr value)
+  (string-append var "." attr " = " (generate-text-field-border-style value) ";"))
 
 (define (generate-assign-text-field-view-mode var attr value)
   (string-append var "." attr " = " (generate-text-field-view-mode value) ";"))
 
-(define (generate-clear-button-mode var value)
-  (generate-assign-text-field-view-mode var "clearButtonMode" value))
-
-(define (generate-left-view var value)
-  (string-append var ".leftView = " (generate-view-ref value) ";"))
-
-(define (generate-left-view-mode var value)
-  (generate-assign-text-field-view-mode var "leftViewMode" value))
-
-(define (generate-right-view var value)
-  (string-append var ".rightView = " (generate-view-ref value) ";"))
-
-(define (generate-right-view-mode var value)
-  (generate-assign-text-field-view-mode var "rightViewMode" value))
-
-(define (generate-input-view var value)
-  (string-append var ".inputView = " (generate-view-ref value) ";"))
-
-(define (generate-accessory-view var value)
-  (string-append var ".accessoryView = " (generate-view-ref value) ";"))
-
-(define (generate-editable var value)
-  (generate-assign-bool var ".editable" value))
-
-(define (generate-data-detector-types var value)
-  (string-append var ".dataDetectorTypes = " (generate-data-detector-type value) ";"))
-
-(define (generate-selected-range var value)
-  (string-append var ".selectedRange = " (generate-range value) ";"))
+(define (generate-assign-data-detector-types var attr value)
+  (string-append var "." attr " = " (generate-data-detector-type value) ";"))
 
 (define the-view-attribute-generators
-  (list (cons 'background-color generate-background-color)
-        (cons 'hidden generate-hidden)
-        (cons 'alpha generate-alpha)
-        (cons 'opaque generate-opaque)
-        (cons 'clips-to-bounds generate-clips-to-bounds)
-        (cons 'clears-context-before-drawing generate-clears-context-before-drawing)
-        (cons 'user-interaction-enabled generate-user-interaction-enabled)
-        (cons 'multiple-touch-enabled generate-multiple-touch-enabled)
-        (cons 'exclusive-touch generate-exclusive-touch)
-        (cons 'autoresizing-mask generate-autoresizing-mask)
-        (cons 'autoresizes-subviews generate-autoresizes-subviews)
-        (cons 'content-mode generate-content-mode)
-        (cons 'content-stretch generate-content-stretch)
-        (cons 'content-scale-factor generate-content-scale-factor)))
+  (list (list 'background-color generate-assign-color "backgroundColor")
+        (list 'hidden generate-assign-bool "hidden")
+        (list 'alpha generate-assign-float "alpha")
+        (list 'opaque generate-assign-bool "opaque")
+        (list 'clips-to-bounds generate-assign-bool "clipsToBounds")
+        (list 'clears-context-before-drawing generate-assign-bool "clearsContexBeforeDrawing")
+        (list 'user-interaction-enabled generate-assign-bool "userInteractionEnabled")
+        (list 'multiple-touch-enabled generate-assign-bool "multipleTouchEnabled")
+        (list 'exclusive-touch generate-assign-bool "exclusiveTouch")
+        (list 'autoresizing-mask generate-assign-autoresizing-mask "autoresizingMask")
+        (list 'autoresizes-subviews generate-assign-bool "autoresizesSubviews")
+        (list 'content-mode generate-assign-content-mode "contentMode")
+        (list 'content-stretch generate-assign-rect "contentStretch")
+        (list 'content-scale-factor generate-assign-float "contentScaleFactor")))
 
 (define the-control-attribute-generators
-  (list (cons 'enabled generate-enabled)
-        (cons 'selected generate-selected)
-        (cons 'highlighted generate-highlighted)
-        (cons 'content-vertical-alignment generate-content-vertical-alignment)
-        (cons 'content-horizontal-alignment generate-content-horizontal-alignment)))
+  (list (list 'enabled generate-assign-bool "enabled")
+        (list 'selected generate-assign-bool "selected")
+        (list 'highlighted generate-assign-bool "highlighted")
+        (list 'content-vertical-alignment generate-assign-content-vertical-alignment "contentVerticalAlignment")
+        (list 'content-horizontal-alignment generate-assign-content-horizontal-alignment "contentHorizontalAlignment")))
 
 (define the-scroll-attribute-generators
   (append the-view-attribute-generators
-          (list (cons 'content-offset generate-content-offset)
-                (cons 'content-size generate-content-size)
-                (cons 'content-inset generate-content-inset)
-                (cons 'scroll-enabled generate-scroll-enabled)
-                (cons 'direction-lock-enabled generate-direction-lock-enabled)
-                (cons 'scroll-to-top generate-scroll-to-top)
-                (cons 'paging-enabled generate-paging-enabled)
-                (cons 'bounces generate-bounces)
-                (cons 'always-bounces-vertical generate-always-bounces-vertical)
-                (cons 'always-bounces-horizontal generate-always-bounces-horizontal)
-                (cons 'can-cancel-content-touches generate-can-cancel-content-touches)
-                (cons 'delays-content-touches generate-delays-content-touches)
-                (cons 'deceleration-rate generate-deceleration-rate)
-                (cons 'indicator-style generate-indicator-style)
-                (cons 'scroll-indicator-insets generate-scroll-indicator-insets)
-                (cons 'shows-horizontal-scroll-indicator generate-shows-horizontal-scroll-indicator)
-                (cons 'shows-vertical-scroll-indicator generate-shows-vertical-scroll-indicator)
-                (cons 'zoom-scale generate-zoom-scale)
-                (cons 'maximum-zoom-scale generate-maximum-zoom-scale)
-                (cons 'minimum-zoom-scale generate-minimum-zoom-scale)
-                (cons 'bounces-zoom generate-bounces-zoom))))
+          (list (list 'content-offset generate-assign-offset "contentOffset")
+                (list 'content-size generate-assign-size "contentSize")
+                (list 'content-inset generate-assign-edge-insets "contentInset")
+                (list 'scroll-enabled generate-assign-bool "scrollEnabled")
+                (list 'direction-lock-enabled generate-assign-bool "directionLockEnabled")
+                (list 'scroll-to-top generate-assign-bool "scrollToTop")
+                (list 'paging-enabled generate-assign-bool "pagingEnabled")
+                (list 'bounces generate-assign-bool "bounces")
+                (list 'always-bounces-vertical generate-assign-bool "alwaysBouncesVertical")
+                (list 'always-bounces-horizontal generate-assign-bool "alwaysBouncesHorizontal")
+                (list 'can-cancel-content-touches generate-assign-bool "canCancelContentTouches")
+                (list 'delays-content-touches generate-assign-bool "delaysContentTouches")
+                (list 'deceleration-rate generate-assign-float "decelerationRate")
+                (list 'indicator-style generate-assign-indicator-style "indicatorStyle")
+                (list 'scroll-indicator-insets generate-assign-edge-insets "scrollIndicator")
+                (list 'shows-horizontal-scroll-indicator generate-assign-bool "showsHorizontalScrollIndicator")
+                (list 'shows-vertical-scroll-indicator generate-assign-bool "showsVerticalScrollIndicator")
+                (list 'zoom-scale generate-assign-float "zoomScale")
+                (list 'maximum-zoom-scale generate-assign-float "maximumZoomScale")
+                (list 'minimum-zoom-scale generate-assign-float "minimumZoomScale")
+                (list 'bounces-zoom generate-assign-bool "bouncesZoom"))))
 
 (define the-label-attribute-generators
   (append the-view-attribute-generators
-          (list (cons 'text generate-text)
-                (cons 'font generate-assign-font)
-                (cons 'text-color generate-text-color)
-                (cons 'text-alignment generate-text-alignment)
-                (cons 'line-break-mode generate-line-break-mode)
-                (cons 'enabled generate-enabled)
-                (cons 'adjusts-font-size-to-fit-width generate-adjusts-font-size-to-fit-width)
-                (cons 'baseline-adjustment generate-baseline-adjustment)
-                (cons 'minimum-font-size generate-minimum-font-size)
-                (cons 'number-of-lines generate-number-of-lines)
-                (cons 'highlighted-text-color generate-highlighted-text-color)
-                (cons 'highlighted generate-highlighted)
-                (cons 'shadow-color generate-shadow-color)
-                (cons 'shadow-offset generate-shadow-offset))))
+          (list (list 'text generate-assign-string "text")
+                (list 'font generate-assign-font "font")
+                (list 'text-color generate-assign-color "textColor")
+                (list 'text-alignment generate-assign-text-alignment "textAlignment")
+                (list 'line-break-mode generate-assign-line-break-mode "lineBreakMode")
+                (list 'enabled generate-assign-bool "enabled")
+                (list 'adjusts-font-size-to-fit-width generate-assign-bool "adjustsFontSizeToFitWidth")
+                (list 'baseline-adjustment generate-assign-baseline-adjustment "baselineAdjustment")
+                (list 'minimum-font-size generate-assign-font-size "minimumFontSize")
+                (list 'number-of-lines generate-assign-integer "numberOfLines")
+                (list 'highlighted-text-color generate-assign-color "highlightedTextColor")
+                (list 'highlighted generate-assign-bool "highlighted")
+                (list 'shadow-color generate-assign-color "shadowColor")
+                (list 'shadow-offset generate-assign-size "shadowOffset"))))
 
 (define the-button-attribute-generators
   (append the-view-attribute-generators
           the-control-attribute-generators
-          (list (cons 'reverses-title-shadow-when-highlighted generate-reverses-title-shadow-when-highlighted)
-                (cons 'title-for-state generate-title-for-state)
-                (cons 'title-color-for-state generate-title-color-for-state)
-                (cons 'title-shadow-color-for-state generate-title-shadow-color-for-state)
-                (cons 'adjusts-image-when-highlighted generate-adjusts-image-when-highlighted)
-                (cons 'adjusts-image-when-disabled generate-adjusts-image-when-disabled)
-                (cons 'shows-touch-when-highlighted generate-shows-touch-when-highlighted)
-                (cons 'background-image-for-state generate-background-image-for-state)
-                (cons 'image-for-state generate-image-for-state)
-                (cons 'content-edge-insets generate-content-edge-insets)
-                (cons 'title-edge-insets generate-title-edge-insets)
-                (cons 'image-edge-insets generate-title-edge-insets))))
+          (list (list 'reverses-title-shadow-when-highlighted generate-assign-bool "reversesTitleShadowWhenHighlighted")
+                (list 'title-for-state generate-title-for-state #f)
+                (list 'title-color-for-state generate-set-color-for-state "setTitleColor")
+                (list 'title-shadow-color-for-state generate-set-color-for-state "setTitleShadowColor")
+                (list 'adjusts-image-when-highlighted generate-assign-bool "adjustsImageWhenHighlighted")
+                (list 'adjusts-image-when-disabled generate-assign-bool "adjustsImageWhenDisabled")
+                (list 'shows-touch-when-highlighted generate-assign-bool "showsTouchWhenHighlighted")
+                (list 'background-image-for-state generate-set-image-for-state "setBackgroundImage")
+                (list 'image-for-state generate-set-image-for-state "setImage")
+                (list 'content-edge-insets generate-assign-edge-insets "contentEdgeInsets")
+                (list 'title-edge-insets generate-assign-edge-insets "titleEdgeInsets")
+                (list 'image-edge-insets generate-assign-edge-insets "imageEdgeInsets"))))
 
 (define the-image-attribute-generators
-  (list (cons 'image generate-image)
-        (cons 'highlighted-image generate-highlighted-image)
-        (cons 'animation-images generate-animation-images)
-        (cons 'highlighted-animation-images generate-highlighted-animation-images)
-        (cons 'animation-duration generate-animation-duration)
-        (cons 'animation-repeat-count generate-animation-repeat-count)
-        (cons 'user-interaction-enabled generate-interaction-enabled)
-        (cons 'highlighted generate-highlighted)))
+  (list (list 'image generate-assign-image "image")
+        (list 'highlighted-image generate-assign-image "highlightedImage")
+        (list 'animation-images generate-assign-images "animationImages")
+        (list 'highlighted-animation-images generate-assign-images "highlightedAnimationImages")
+        (list 'animation-duration generate-assign-float "animationDuration")
+        (list 'animation-repeat-count generate-assign-integer "animationRepeatCount")
+        (list 'user-interaction-enabled generate-assign-bool "userInteractionEnabled")
+        (list 'highlighted generate-assign-bool "highlighted")))
 
 (define the-slider-attribute-generators
   (append the-view-attribute-generators
           the-control-attribute-generators
-          (list (cons 'value generate-value)
-                (cons 'minimum-value generate-minimum-value)
-                (cons 'maximum-value generate-maximum-value)
-                (cons 'continuous generate-continuous)
-                (cons 'minimum-value-image generate-minimum-value-image)
-                (cons 'maximum-value-image generate-maximum-value-image)
-                (cons 'minimum-track-tint-color generate-minimum-track-tint-color)
-                (cons 'minimum-track-image-for-state generate-minimum-track-image-for-state)
-                (cons 'maximum-track-tint-color generate-maximum-track-tint-color)
-                (cons 'maximum-track-image-for-state generate-maximum-track-image-for-state)
-                (cons 'thumb-tint-color generate-thumb-tint-color)
-                (cons 'thumb-image-for-state generate-thumb-image-for-state))))
+          (list (list 'value generate-assign-float "value")
+                (list 'minimum-value generate-assign-float "minimumValue")
+                (list 'maximum-value generate-assign-float "maximumValue")
+                (list 'continuous generate-assign-bool "continuous")
+                (list 'minimum-value-image generate-assign-image "minimumValueImage")
+                (list 'maximum-value-image generate-assign-image "maximumValueImage")
+                (list 'minimum-track-tint-color generate-assign-color "minimumTrackTintColor")
+                (list 'minimum-track-image-for-state generate-minimum-track-image-for-state #f)
+                (list 'maximum-track-tint-color generate-assign-color "maximumTrackTintColor")
+                (list 'maximum-track-image-for-state generate-maximum-track-image-for-state #f)
+                (list 'thumb-tint-color generate-assign-color "thumbTintColor")
+                (list 'thumb-image-for-state generate-thumb-image-for-state #f))))
 
 (define the-segmented-control-attribute-generators
   (append the-view-attribute-generators
           the-control-attribute-generators
-          (list (cons 'items fake-generate)
-                (cons 'selected-segment-index generate-selected-segment-index)
-                (cons 'momentary generate-momentary)
-                (cons 'segmented-control-style generate-segmented-control-style)
-                (cons 'apportions-segment-widths-by-content generate-apportions-segment-widths-by-content)
-                (cons 'tint-color generate-tint-color)
-                (cons 'enabled-for-segment-at-index generate-enabled-for-segment-at-index)
-                (cons 'content-offset-for-segment-at-index generate-content-offset-for-segment-at-index)
-                (cons 'width-for-segment-at-index generate-width-for-segment-at-index)
-                (cons 'background-image-for-state-bar-metrics generate-background-image-for-state-bar-metrics)
-                (cons 'content-position-adjustment-for-segment-type-bar-metrics generate-content-position-adjustment-for-segment-type-bar-metrics)
-                (cons 'divider-image-for-left-segment-state-right-segment-state-bar-metrics generate-divider-image-for-left-segment-state-right-segment-state-bar-metrics)
-                (cons 'title-text-attributes-for-state generate-title-text-attributes-for-state))))
+          (list (list 'items fake-generate #f)
+                (list 'selected-segment-index generate-assign-integer "selectedSegmentIndex")
+                (list 'momentary generate-assign-bool "momentary")
+                (list 'segmented-control-style generate-assign-segmented-control-style "segmentedControlStyle")
+                (list 'apportions-segment-widths-by-content generate-assign-bool "apportionsSegmentWidthsByContent")
+                (list 'tint-color generate-assign-color "tintColor")
+                (list 'enabled-for-segment-at-index generate-enabled-for-segment-at-index #f)
+                (list 'content-offset-for-segment-at-index generate-content-offset-for-segment-at-index #f)
+                (list 'width-for-segment-at-index generate-width-for-segment-at-index #f)
+                (list 'background-image-for-state-bar-metrics generate-background-image-for-state-bar-metrics #f)
+                (list 'content-position-adjustment-for-segment-type-bar-metrics generate-content-position-adjustment-for-segment-type-bar-metrics #f)
+                (list 'divider-image-for-left-segment-state-right-segment-state-bar-metrics generate-divider-image-for-left-segment-state-right-segment-state-bar-metrics #f)
+                (list 'title-text-attributes-for-state generate-title-text-attributes-for-state #f))))
 
 (define the-text-field-attribute-generators
   (append the-view-attribute-generators
           the-control-attribute-generators
-          (list (cons 'text generate-text)
-                (cons 'placeholder generate-placeholder)
-                (cons 'font generate-font)
-                (cons 'text-color generate-text-color)
-                (cons 'text-alignment generate-text-alignment)
-                (cons 'adjusts-font-size-to-fit-width generate-adjusts-font-size-to-fit-width)
-                (cons 'minimum-font-size generate-minimum-font-size)
-                (cons 'clears-on-begin-editing generate-clears-on-begin-editing)
-                (cons 'border-style generate-border-style)
-                (cons 'background generate-background)
-                (cons 'disabled-background generate-disabled-background)
-                (cons 'clear-button-mode generate-clear-button-mode)
-                (cons 'left-view generate-left-view)
-                (cons 'left-view-mode generate-left-view-mode)
-                (cons 'right-view generate-right-view)
-                (cons 'right-view-mode generate-right-view-mode)
-                (cons 'input-view generate-input-view)
-                (cons 'input-accessory-view generate-accessory-view))))
+          (list (list 'text generate-assign-string "text")
+                (list 'placeholder generate-assign-string "placeholder")
+                (list 'font generate-assign-font "font")
+                (list 'text-color generate-assign-color "textColor")
+                (list 'text-alignment generate-assign-text-alignment "textAlignment")
+                (list 'adjusts-font-size-to-fit-width generate-assign-bool "adjustsFontSizeToFitWidth")
+                (list 'minimum-font-size generate-assign-float "minimumFontSize")
+                (list 'clears-on-begin-editing generate-assign-bool "clearsOnBeginEditing")
+                (list 'border-style generate-assign-border-style "borderStyle")
+                (list 'background generate-assign-image "background")
+                (list 'disabled-background generate-assign-image "disabledBackground")
+                (list 'clear-button-mode generate-assign-text-field-view-mode "clearButtonMode")
+                (list 'left-view generate-assign-view-ref "leftView")
+                (list 'left-view-mode generate-assign-text-field-view-mode "leftViewMode")
+                (list 'right-view generate-assign-view-ref "rightView")
+                (list 'right-view-mode generate-assign-text-field-view-mode "rightViewMode")
+                (list 'input-view generate-assign-view-ref "inputView")
+                (list 'input-accessory-view generate-assign-view-ref "accessoryView"))))
 
 (define the-text-view-attribute-generators
   (append the-view-attribute-generators
-          (list (cons 'text generate-text)
-                (cons 'font generate-font)
-                (cons 'text-color generate-text-color)
-                (cons 'editable generate-editable)
-                (cons 'data-detector-types generate-data-detector-types)
-                (cons 'text-alignment generate-text-alignment)
-                (cons 'selected-range generate-selected-range)
-                (cons 'input-view generate-input-view)
-                (cons 'input-accessory-view generate-accessory-view))))
+          (list (list 'text generate-assign-string "text")
+                (list 'font generate-assign-font "font")
+                (list 'text-color generate-assign-color "textColor")
+                (list 'editable generate-assign-bool "editable")
+                (list 'data-detector-types generate-assign-data-detector-types "dataDetectorTypes")
+                (list 'text-alignment generate-assign-text-alignment "textAlignment")
+                (list 'selected-range generate-assign-range "selectedRange")
+                (list 'input-view generate-assign-view-ref "inputView")
+                (list 'input-accessory-view generate-assign-view-ref "accessoryView"))))
