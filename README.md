@@ -72,12 +72,13 @@ of "self.view" to make sure it's a symbol.
 
 #### above
 
-    (above top bottom ratio)
+    (above top bottom ratio|height)
 
 `above` will place `top` on the `bottom`, and occupy `ratio` percent
-of area inherited from parent. `bottom` gets the rest area. Here,
-`top` and `bottom` can be a basic primitive, a advanced primitive, or
-a view. `ratio` is a float between 0.0 to 1.0.
+of area inherited from parent or `height` number pixels of
+area. `bottom` gets the rest area. Here, `top` and `bottom` can be a
+basic primitive, a advanced primitive, or a view. `ratio|height` is a
+float between 0.0 to 1.0 or a integer greater than 1.
 
 Here is an example about `above`:
 
@@ -88,12 +89,12 @@ Here is an example about `above`:
 
 #### beside
 
-    (beside left right ratio)
+    (beside left right ratio|width)
 
 `beside` will place `left` on the left of `right`. Like `top` in
 `above`, `left` occupies `ratio` percenter of area inherited from
-parent, and `right` gets the rest. `ratio` has the same meaning as in
-`above`.
+parent or `width` number pixels of area, and `right` gets the
+rest. `ratio|width` has the same type as in `above`.
 
 ### Advanced Primitives
 

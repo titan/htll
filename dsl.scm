@@ -254,7 +254,7 @@
 (define (view-type view)
   (car view))
 
-(define (view-ratio view)
+(define (view-ratio-or-number view)
   (cadddr view))
 
 (define (view-margin view)
@@ -414,16 +414,16 @@
   (let ((varstr (symbol->string var)))
     (let loop ((attrs (view-attributes view)))
       (if (not (null? attrs))
-        (let ((attr (car attrs)))
-          (let ((generator (assq (car attr) generators)))
-            (if generator
-                (begin
-                  (if (caddr generator)
-                      (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
-                      (display ((cadr generator) (symbol->string var) (cdr attr))))
-                  (newline))
-                (error "Invalid attribute" (car attr) "for" var)))
-          (loop (cdr attrs)))))))
+          (let ((attr (car attrs)))
+            (let ((generator (assq (car attr) generators)))
+              (if generator
+                  (begin
+                    (if (caddr generator)
+                        (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
+                        (display ((cadr generator) (symbol->string var) (cdr attr))))
+                    (newline))
+                  (error "Invalid attribute" (car attr) "for" var)))
+            (loop (cdr attrs)))))))
 
 (define the-attribute-generators
   (list (cons 'view the-view-attribute-generators)
@@ -681,12 +681,12 @@
        ((eq? 'above (view-type view))
         (let ((up (up-view view))
               (low (low-view view))
-              (ratio (view-ratio view)))
-          (if (> ratio 1)
-              (let ((up-height ratio))
+              (ratio-number (view-ratio-or-number view)))
+          (if (> ratio-number 1)
+              (let ((up-height ratio-number))
                 (layout root up x y width up-height)
                 (layout root low x `(+ ,y ,up-height) width `(- ,height ,up-height)))
-              (begin
+              (let ((ratio ratio-number))
                 (layout root up x y width `(* ,height ,ratio))
                 (layout root low x `(+ ,y (* ,height ,ratio)) width `(* ,height (- 1 ,ratio)))))
           (list x y width height)))
@@ -700,12 +700,12 @@
        ((eq? 'beside (view-type view))
         (let ((left (left-view view))
               (right (right-view view))
-              (ratio (view-ratio view)))
-          (if (> ratio 1)
-              (let ((left-width ratio))
+              (ratio-number (view-ratio-or-number view)))
+          (if (> ratio-number 1)
+              (let ((left-width ratio-number))
                 (layout root left x y left-width height)
                 (layout root right `(+ ,x ,left-width) y `(- ,width ,left-width) height))
-              (begin
+              (let ((ratio ratio-number))
                 (layout root left x y `(* ,width ,ratio) height)
                 (layout root right `(+ ,x (* ,width ,ratio)) y `(* ,width (- 1 ,ratio)) height)))
           (list x y width height)))
