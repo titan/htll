@@ -14,7 +14,7 @@
 
 (define (read-file filename)
   (let* ((in (open-input-file filename))
-          (ast (parse-file in)))
+         (ast (parse-file in)))
     (close-input-port in)
     ast))
 
@@ -62,15 +62,19 @@
                   (usage prog)
                   (begin
                     (set! ios-version ver)
-                    (map (lambda (src) (eval src the-global-environment)) (read-file file))
-                    (cond
-                     ((eq? action 'property) (generate-property the-global-environment))
-                     ((eq? action 'synthesize) (generate-synthesize the-global-environment))
-                     ((eq? action 'view-did-load) (generate-view-did-load the-global-environment))
-                     ((eq? action 'view-will-appear) (generate-view-will-appear the-global-environment))
-                     ((eq? action 'view-will-layout-subviews) (generate-view-will-layout-subviews the-global-environment))
-                     ((eq? action 'eval) 'ok)
-                     (else (display "Unknown action: ") (display action) (newline) (usage prog)))))
+                    (let src-loop ((srcs (read-file file)))
+                      (if (null? srcs)
+                          (cond
+                           ((eq? action 'property) (generate-property the-global-environment))
+                           ((eq? action 'synthesize) (generate-synthesize the-global-environment))
+                           ((eq? action 'view-did-load) (generate-view-did-load the-global-environment))
+                           ((eq? action 'view-will-appear) (generate-view-will-appear the-global-environment))
+                           ((eq? action 'view-will-layout-subviews) (generate-view-will-layout-subviews the-global-environment))
+                           ((eq? action 'eval) 'ok)
+                           (else (display "Unknown action: ") (display action) (newline) (usage prog)))
+                          (begin
+                            (eval (car srcs) the-global-environment)
+                            (src-loop (cdr srcs)))))))
               (let ((arg (car args)))
                 (cond
                  ((and (equal? arg "-v") (> (length args) 1))
