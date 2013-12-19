@@ -72,13 +72,27 @@ of "self.view" to make sure it's a symbol.
 
 #### above
 
-    (above top bottom ratio|height)
+    (above top bottom [ratio|margin])
 
-`above` will place `top` on the `bottom`, and occupy `ratio` percent
-of area inherited from parent or `height` number pixels of
-area. `bottom` gets the rest area. Here, `top` and `bottom` can be a
-basic primitive, a advanced primitive, or a view. `ratio|height` is a
-float between 0.0 to 1.0 or a integer greater than 1.
+There are three ways to use the `above` primitive.
+
+- `(above top bottom ratio)`
+
+    `above` will place `top` on the `bottom`, and occupy `ratio`
+    percent of area inherited from parent and `bottom` gets the rest
+    area. `ratio` is a float between 0.0 to 1.0 (excluding 0.0 and
+    1.0).
+
+- `(above top bottom margin)`
+
+    `above` will place `top` on the `bottom` too, and wrap it's real
+    height and `bottom` gets the rest area. There is a gap (`margin`)
+    between `top` and `bottom`. `margin` is a integer greater than 1.
+
+- `(above top bottom)`
+
+    Layout `top` and `bottom` as `(above top bottom margin)`, but no
+    gap this time.
 
 Here is an example about `above`:
 
@@ -89,12 +103,27 @@ Here is an example about `above`:
 
 #### beside
 
-    (beside left right ratio|width)
+    (beside left right [ratio|margin])
 
-`beside` will place `left` on the left of `right`. Like `top` in
-`above`, `left` occupies `ratio` percenter of area inherited from
-parent or `width` number pixels of area, and `right` gets the
-rest. `ratio|width` has the same type as in `above`.
+Like `above`, `beside` gets 3 ways to layout `left` and `right`.
+
+- `(beside left right ratio)`
+
+    `beside` will place `left` on the left of `right`. `left` occupies
+    `ratio` percenter of area inherited from parent and `right` gets
+    the rest. `ratio` is a float between 0.0 and 1.0(excluding 0.0 and
+    1.0).
+
+- `(beside left right margin)`
+
+    `beside` will place `left` on the left of `right` too, and wrap
+    it's real width and `right` gets the rest area. There is a
+    `margin` long gap between `left` and `right`. `margin` is a
+    integer greater than 1.
+
+- `(beside left right)`
+
+    Same as `(beside left right margin)` without `margin`.
 
 ### Advanced Primitives
 
