@@ -712,7 +712,7 @@
       (if (eq? op '*)
           exp
           (cond
-           ((and (pair? a) (eq? (car a) '*) (pair? b) (eq? (car b) '*)) (combine-both op a b))
+           ((and (pair? a) (pair? b)) (combine-both op a b))
            ((and (pair? a) (eq? (car a) '*)) (combine-single-b op a b))
            ((and (pair? b) (eq? (car b) '*)) (combine-single-a op a b))
            (else exp)))))
@@ -817,7 +817,7 @@
                 (if (eq? 'blank (view-type left))
                     (if (and (number? width) (= 0 width))
                         (let ((frame2 (layout root right `(+ ,x ,margin) y 0 height gen?)))
-                          (list x y (frame-width frame2) frame))
+                          (list x y (frame-width frame2) height))
                         (let ((frame2 (layout root right x y 0 height #f)))
                           (layout root right `(+ ,x (- ,width (+ ,(frame-width frame2) ,margin))) y (frame-width frame2) height gen?)
                           (list x y width height)))
