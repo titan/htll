@@ -198,6 +198,10 @@ so closed, you can insert a `blank` between them. e.g.
 HTLL. There are serveral views inherit `control`, they also get it's
 attributes.
 
+Variable|Type
+:-------|:------
+enabled|boolean
+
 - enabled
 
     A Boolean value that determines whether the receiver is enabled.
