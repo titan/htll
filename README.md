@@ -198,22 +198,20 @@ so closed, you can insert a `blank` between them. e.g.
 HTLL. There are serveral views inherit `control`, they also get it's
 attributes.
 
-Variable|Type
+Attribute|Type
 :-------|:------
 enabled|boolean
+selected|boolean
+highlighted|boolean
+content-vertical-alignment| 1. center
+                            2. top
+                            3. bottom
+                            4. fill
+content-horizontal-alignment| 1. center
+                              2. left
+                              3. right
+                              4. fill
 
-- enabled
-
-    A Boolean value that determines whether the receiver is enabled.
-
-- selected
-
-    A Boolean value that determines whether the receiver is
-    highlighted.
-
-- highlighted
-
-    A Boolean value that determines whether the receiver is highlighted.
 
 - content-vertical-alignment
 
