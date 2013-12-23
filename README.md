@@ -203,740 +203,221 @@ Attribute|Type
 enabled|boolean
 selected|boolean
 highlighted|boolean
-content-vertical-alignment| 1. center
-                            2. top
-                            3. bottom
-                            4. fill
-content-horizontal-alignment| 1. center
-                              2. left
-                              3. right
-                              4. fill
-
-
-- content-vertical-alignment
-
-    The vertical alignment of content (text or image) within the
-    receiver. Available values include:
-
-    1. center
-    2. top
-    3. bottom
-    4. fill
-
-- content-horizontal-alignment
-
-    The horizontal alignment of content (text or image) within the
-    receiver. Available values include:
-
-    1. center
-    2. left
-    3. right
-    4. fill
+content-vertical-alignment|center/top/bottom/fill
+content-horizontal-alignment|center/left/right/fill
 
 ### view
 
 `view` corresponds to UIView in iOS, and all views inherit from it.
 
-- background-color
+Attribute|Type
+:-------|:------
+background-color|color
+hidden|boolean
+alpha|float
+opaque|boolean
+clips-to-bounds|boolean
+clears-context-before-drawing|boolean
+user-interaction-enabled|boolean
+multiple-touch-enabled|boolean
+exclusive-touch|boolean
+autoresizing-mask|none/flexible-left-margin/flexible-width/flexible-right-margin/flexible-top-margin/flexible-height/flexible-bottom-margin
+autoresizes-subviews|boolean
+content-mode|see below
+content-stretch|rect
+content-scale-factor|float. This value is typically either 1.0 or 2.0.
 
-    The receiver’s background color.
+Available content modes include:
 
-- hidden
-
-    A Boolean value that determines whether the receiver is hidden.
-
-- alpha
-
-    The receiver’s alpha value. A float value.
-
-- opaque
-
-    A Boolean value that determines whether the receiver is opaque.
-
-- clips-to-bounds
-
-    A Boolean value that determines whether subviews are confined to
-    the bounds of the receiver.
-
-- clears-context-before-drawing
-
-    A Boolean value that determines whether the receiver’s bounds
-    should be automatically cleared before drawing.
-
-- user-interaction-enabled
-
-    A Boolean value that determines whether user events are ignored
-    and removed from the event queue.
-
-- multiple-touch-enabled
-
-    A Boolean value that indicates whether the receiver handles
-    multi-touch events.
-
-- exclusive-touch
-
-    A Boolean value that indicates whether the receiver handles touch
-    events exclusively.
-
-- autoresizing-mask
-
-    An integer bit mask that determines how the receiver resizes
-    itself when its superview’s bounds change. Available values
-    include:
-
-    1. none
-    2. flexible-left-margin
-    3. flexible-width
-    4. flexible-right-margin
-    5. flexible-top-margin
-    6. flexible-height
-    7. flexible-bottom-margin
-
-- autoresizes-subviews
-
-    A Boolean value that determines whether the receiver automatically
-    resizes its subviews when its bounds change.
-
-- content-mode
-
-    A flag used to determine how a view lays out its content when its
-    bounds change.
-
-- content-stretch
-
-    The rectangle that defines the stretchable and nonstretchable
-    regions of a view. A rect value.
-
-- content-scale-factor
-
-    The scale factor applied to the view. This value is typically
-    either 1.0 or 2.0.
+- scale-to-fill
+- scale-aspect-fit
+- scale-aspect-fill
+- redraw
+- center
+- top
+- bottom
+- left
+- right
+- top-left
+- top-right
+- bottom-left
+- bottom-right
 
 ### scroll
 
 `scroll` corresponds to UIScrollView in iOS.
 
-- content-offset
-
-    The point at which the origin of the content view is offset from
-    the origin of the scroll view. A point value.
-
-- content-size
-
-    The size of the content view. A size value.
-
-- content-inset
-
-    The distance that the content view is inset from the enclosing
-    scroll view. An edge-insets value.
-
-- scroll-enabled
-
-    A Boolean value that determines whether scrolling is enabled.
-
-- direction-lock-enabled
-
-    A Boolean value that determines whether scrolling is disabled in a
-    particular direction.
-
-- scroll-to-top
-
-    A Boolean value that controls whether the scroll-to-top gesture is
-    effective.
-
-- paging-enabled
-
-    A Boolean value that determines whether paging is enabled for the
-    scroll view.
-
-- bounces
-
-    A Boolean value that controls whether the scroll view bounces past
-    the edge of content and back again.
-
-- always-bounces-vertical
-
-    A Boolean value that determines whether bouncing always occurs
-    when vertical scrolling reaches the end of the content.
-
-- always-bounces-horizontal
-
-    A Boolean value that determines whether whether bouncing always
-    occurs when horizontal scrolling reaches the end of the content
-    view.
-
-- can-cancel-content-touches
-
-    A Boolean value that controls whether touches in the content view
-    always lead to tracking.
-
-- delays-content-touches
-
-    A Boolean value that determines whether the scroll view delays the
-    handling of touch-down gestures.
-
-- deceleration-rate
-
-    A floating-point value that determines the rate of deceleration
-    after the user lifts their finger.
-
-- indicator-style
-
-    The style of the scroll indicators. Available styles include:
-
-    1. default
-    2. black
-    3. white
-
-- scroll-indicator-insets
-
-    The distance the scroll indicators are inset from the edge of the
-    scroll view. A edge-insets value.
-
-- shows-horizontal-scroll-indicator
-
-    A Boolean value that controls whether the horizontal scroll
-    indicator is visible.
-
-- shows-vertical-scroll-indicator
-
-    A Boolean value that controls whether the vertical scroll
-    indicator is visible.
-
-- zoom-scale
-
-    A floating-point value that specifies the current scale factor
-    applied to the scroll view's content.
-
-- maximum-zoom-scale
-
-    A floating-point value that specifies the maximum scale factor
-    that can be applied to the scroll view's content.
-
-- minimum-zoom-scale
-
-    A floating-point value that specifies the minimum scale factor
-    that can be applied to the scroll view's content.
-
-- bounces-zoom
-
-    A Boolean value that determines whether the scroll view animates
-    the content scaling when the scaling exceeds the maximum or
-    minimum limits.
+Attribute|Type
+:-------|:------
+content-offset|point
+content-size|size
+content-inset|edge-insets
+scroll-enabled|boolean
+direction-lock-enabled|boolean
+scroll-to-top|boolean
+paging-enabled|boolean
+bounces|boolean
+always-bounces-vertical|boolean
+always-bounces-horizontal|boolean
+can-cancel-content-touches|boolean
+delays-content-touches|boolean
+deceleration-rate|float
+indicator-style|default/black/white
+scroll-indicator-insets|edge-insets
+shows-horizontal-scroll-indicator|boolean
+shows-vertical-scroll-indicator|boolean
+zoom-scale|float
+maximum-zoom-scale|float
+minimum-zoom-scale|float
+bounces-zoom|boolean
 
 ### label
 
 `label` corresponds to UILabel in iOS.
 
-- text
-
-    The text displayed by the label. A string value.
-
-- font
-
-    The font of the text.
-
-- text-color
-
-    The color of the text.
-
-- text-alignment
-
-    The technique to use for aligning the text. Availabel values are:
-
-    1. left
-    2. center
-    3. right
-
-- line-break-mode
-
-    The technique to use for wrapping and truncating the label’s
-    text. Available modes are:
-
-    1. word-wrap
-    2. character-wrap
-    3. clip
-    4. head-truncation
-    5. tail-truncation
-    6. middle-truncation
-
-- enabled
-
-    The enabled state to use when drawing the label’s text.
-
-- adjusts-font-size-to-fit-width
-
-    A Boolean value indicating whether the font size should be reduced
-    in order to fit the title string into the label’s bounding
-    rectangle.
-
-- baseline-adjustment
-
-    Controls how text baselines are adjusted when text needs to shrink
-    to fit in the label. Available adjustments are:
-
-    1. align-baselines
-    2. align-centers
-    3. none
-
-- minimum-font-size
-
-    The size of the smallest permissible font with which to draw the
-    label’s text.
-
-- number-of-lines
-
-    The maximum number of lines to use for rendering text. A integer
-    value.
-
-- highlighted-text-color
-
-    The highlight color applied to the label’s text.
-
-- highlighted
-
-    A Boolean value indicating whether the receiver should be drawn
-    with a highlight.
-
-- shadow-color
-
-    The shadow color of the text.
-
-- shadow-offset
-
-    The shadow offset (measured in points) for the text. A size value.
+Attribute|Type
+:-------|:------
+text|string
+font|font
+text-color|color
+text-alignment|left/center/right
+line-break-mode|word-wrap/character-wrap/clip/head-truncation/tail-truncation/middle-truncation
+enabled|boolean
+adjusts-font-size-to-fit-width|boolean
+baseline-adjustment|align-baselines/align-centers/none
+minimum-font-size|int
+number-of-lines|int
+highlighted-text-color|color
+highlighted|boolean
+shadow-color|color
+shadow-offset|size
 
 ### button
 
 `button` corresponds to UIButton in iOS. It inherits from `control`
 and `view`.
 
-- reverses-title-shadow-when-highlighted
+Attribute|Type
+:-------|:------
+reverses-title-shadow-when-highlighted|boolean
+title-for-state|(cons string control-state)
+title-color-for-state|(cons color control-state)
+title-shadow-color-for-state|(cons color control-state)
+adjusts-image-when-highlighted|boolean
+adjusts-image-when-disabled|boolean
+shows-touch-when-highlighted|boolan
+background-image-for-state|(cons image-named control-state)
+image-for-state|(cons image-named control-state)
+content-edge-insets|edge-insets
+title-edge-insets|edge-insets
+image-edge-insets|edge-insets
 
-    A Boolean value that determines whether the title shadow changes
-    when the button is highlighted.
+Available control states include:
 
-- title-for-state
-
-    Sets the title to use for the specified state. A pair of a string
-    and a control state. Available control states include:
-
-    1. normal
-    2. highlighted
-    3. disabled
-    4. selected
-    5. application
-    6. reserved
-
-- title-color-for-state
-
-    Sets the color of the title to use for the specified state. A pair
-    of a color and a control state. Available control states are same
-    as what in title-for-state.
-
-- title-shadow-color-for-state
-
-    Sets the color of the title shadow to use for the specified
-    state. The same type as in title-color-for-state.
-
-- adjusts-image-when-highlighted
-
-    A Boolean value that determines whether the image changes when the
-    button is highlighted.
-
-- adjusts-image-when-disabled
-
-    A Boolean value that determines whether the image changes when the
-    button is disabled.
-
-- shows-touch-when-highlighted
-
-    A Boolean value that determines whether tapping the button causes
-    it to glow.
-
-- background-image-for-state
-
-    Sets the background image to use for the specified button state. A
-    pair of a image and a control state. Available control states are
-    the same as in title-for-state.
-
-- image-for-state
-
-    Sets the image to use for the specified state. The parameter is
-    like what in background-image-for-state.
-
-- content-edge-insets
-
-    The inset or outset margins for the edges of the button content
-    drawing rectangle. An edge-insets value.
-
-- title-edge-insets
-
-    The inset or outset margins for the edges of the button title
-    drawing rectangle. An edge-insets value.
-
-- image-edge-insets
-
-    The inset or outset margins for the edges of the button image
-    drawing rectangle. An edge-insets value.
+1. normal
+2. highlighted
+3. disabled
+4. selected
+5. application
+6. reserved
 
 ### image
 
 `image` corresponds to UIImageView in iOS.
 
-- image
-
-    The image displayed in the image view. A image-named value.
-
-- highlighted-image
-
-    The highlighted image displayed in the image view. A image-named
-    value.
-
-- animation-images
-
-    An array of image-named objects to use for an animation.
-
-- highlighted-animation-images
-
-    An array of image-named objects to use for an animation when the
-    view is highlighted.
-
-- animation-duration
-
-    The amount of time it takes to go through one cycle of the
-    images. A float value.
-
-- animation-repeat-count
-
-    Specifies the number of times to repeat the animation. A integer
-    value.
-
-- user-interaction-enabled
-
-    A Boolean value that determines whether user events are ignored
-    and removed from the event queue.
-
-- highlighted
-
-    A Boolean value that determines whether the image is highlighted.
+Attribute|Type
+:-------|:------
+image|image-named
+highlighted-image|image-named
+animation-images|(list image-named)
+highlighted-animation-images|(list image-named)
+animation-duration|float
+animation-repeat-count|int
+user-interaction-enabled|boolean
+highlighted|boolean
 
 ### slider
 
 `slider` corresponds to UISlider in iOS and inherits from `control`.
 
-- value
-
-    Contains the receiver’s current value. A float value.
-
-- minimum-value
-
-    Contains the minimum value of the receiver. A float value.
-
-- maximum-value
-
-    Contains the maximum value of the receiver. A float value.
-
-- continuous
-
-    Contains a Boolean value indicating whether changes in the sliders
-    value generate continuous update events.
-
-- minimum-value-image
-
-    Contains the image that is drawn on the side of the slider
-    representing the minimum value. A image-named value.
-
-- maximum-value-image
-
-    Contains the image that is drawn on the side of the slider
-    representing the maximum value. A image-named value.
-
-- minimum-track-tint-color
-
-    The color used to tint the standard minimum track images.
-
-- minimum-track-image-for-state
-
-    Assigns a minimum track image to the specified control states. A
-    pair of a image-named value and a control state value.
-
-- maximum-track-tint-color
-
-    The color used to tint the standard maximum track images.
-
-- maximum-track-image-for-state
-
-    Assigns a maximum track image to the specified control states. A
-    pair of a image-named value and a control state value.
-
-- thumb-tint-color
-
-    The color used to tint the standard thumb images.
-
-- thumb-image-for-state
-
-    Assigns a thumb image to the specified control states. A pair of a
-    image-named value and a control state value.
+Attribute|Type
+:-------|:------
+value|float
+minimum-value|float
+maximum-value|float
+continuous|boolean
+minimum-value-image|image-named
+maximum-value-image|image-named
+minimum-track-tint-color|color
+minimum-track-image-for-state|(cons image-named control-state)
+maximum-track-tint-color|color
+maximum-track-image-for-state|(cons image-named control-state)
+thumb-tint-color|color
+thumb-image-for-state|(cons image-named control-state)
 
 ### segmented-control
 
-    `segmented-control` correspends to UISegmentedControl in iOS and
-    inherits from `control`.
+`segmented-control` correspends to UISegmentedControl in iOS and
+inherits from `control`.
 
-- items
-
-    Set given titles or images of segmented-control. A list of string
-    or image-named value.
-
-- selected-segment-index
-
-    The index number identifying the selected segment (that is, the
-    last segment touched).
-
-- momentary
-
-    A Boolean value that determines whether segments in the receiver
-    show selected state.
-
-- segmented-control-style
-
-    The style of the segmented control. Available styles include:
-
-    1. plain
-    2. bordered
-    3. bar
-    4. bezeled
-
-- apportions-segment-widths-by-content
-
-    A Boolean value that indicates whether the control attempts to
-    adjust segment widths based on their content widths.
-
-- tint-color
-
-    The tint color of the segmented control.
-
-- enabled-for-segment-at-index
-
-    Enables the specified segment. A pair of bool and integer value.
-
-- content-offset-for-segment-at-index
-
-    Adjusts the offset for drawing the content (image or text) of the
-    specified segment. A pair of size and integer value.
-
-- width-for-segment-at-index
-
-    Sets the width of the specified segment of the receiver. A pair of
-    float and integer value.
-
-- background-image-for-state-bar-metrics
-
-    Sets the background image for a given state and bar metrics. A
-    list with 3 elements: image-named, control state and bar metrics.
-    Available bar-metrics include:
-
-    1. default
-    2. landscape-phone
-
-- content-position-adjustment-for-segment-type-bar-metrics
-
-    Sets the content positioning offset for a given segment and bar
-    metrics. A list with 3 elements: offset, segment-type and
-    bar-metrics. Availabel segment-type include:
-
-    1. any
-    2. left
-    3. center
-    4. right
-    5. alone
-
-- divider-image-for-left-segment-state-right-segment-state-bar-metrics
-
-   Sets the divider image used for a given combination of left and
-   right segment states and bar metrics. A list with 4 elements:
-   image-named, left control state, right control state and
-   bar-metrics. Available bar-metrics include:
-
-    1. default
-    2. landscape-phone
-
-- title-text-attributes-for-state
-
-    Sets the text attributes of the title for a given control state. A
-    pair of assoication list and control state.
+Attribute|Type
+:-------|:------
+items|(list string/image-named)
+selected-segment-index|int
+momentary|boolean
+segmented-control-style|plain/bordered/bar/bezeled
+apportions-segment-widths-by-content|boolean
+tint-color|color
+enabled-for-segment-at-index|(cons boolean int)
+content-offset-for-segment-at-index|(cons size int)
+width-for-segment-at-index|(cons float int)
+background-image-for-state-bar-metrics|(list image-named control-state default/landscape-phone)
+content-position-adjustment-for-segment-type-bar-metrics|(list offset any/left/center/right/alone default/landscape-phone)
+divider-image-for-left-segment-state-right-segment-state-bar-metrics|(list image-named control-state control-state default/landscape-phone)
+title-text-attributes-for-state|(cons (assoication list) control-state)
 
 ### text-field
 
 `text-field` corresponds to UITextField in iOS and inherits from
 `control`.
 
-- text
-
-    The text displayed by the text field. A string value.
-
-- placeholder
-
-    The string that is displayed when there is no other text in the
-    text field.
-
-- font
-
-    The font of the text.
-
-- text-color
-
-    The color of the text.
-
-- text-alignment
-
-    The technique to use for aligning the text. Available alignments
-    include:
-
-    1. left
-    2. center
-    3. right
-
-- adjusts-font-size-to-fit-width
-
-    A Boolean value indicating whether the font size should be reduced
-    in order to fit the text string into the text field’s bounding
-    rectangle.
-
-- minimum-font-size
-
-    The size of the smallest permissible font with which to draw the
-    text field’s text. A float value.
-
-- clears-on-begin-editing
-
-    A Boolean value indicating whether the text field removes old text
-    when editing begins.
-
-- border-style
-
-    The border style used by the text field. Available styles include:
-
-    1. none
-    2. line
-    3. bezel
-    4. rounded-rect
-
-- background
-
-    The image that represents the background appearance of the text
-    field when it is enabled. A image-named value.
-
-- disabled-background
-
-    The image that represents the background appearance of the text
-    field when it is disabled. A image-named value.
-
-- clear-button-mode
-
-    Controls when the standard clear button appears in the text
-    field. Available modes include:
-
-    1. never
-    2. while-editing
-    3. unless-editing
-    4. always
-
-- left-view
-
-    The overlay view displayed on the left side of the text field. A
-    view value.
-
-- left-view-mode
-
-    Controls when the left overlay view appears in the text field. Available modes include:
-
-    1. never
-    2. while-editing
-    3. unless-editing
-    4. always
-
-- right-view
-
-    The overlay view displayed on the right side of the text field. A
-    view value.
-
-- right-view-mode
-
-    Controls when the right overlay view appears in the text
-    field. Available modes include:
-
-    1. never
-    2. while-editing
-    3. unless-editing
-    4. always
-
-- input-view
-
-    The custom input view to display when the text field becomes the
-    first responder. A view value.
-
-- input-accessory-view
-
-    The custom accessory view to display when the text field becomes
-    the first responder. A view value.
+Attribute|Type
+:-------|:------
+text|string
+placeholder|string
+font|font
+text-color|color
+text-alignment|left/center/right
+adjusts-font-size-to-fit-width|boolean
+minimum-font-size|float
+clears-on-begin-editing|boolean
+border-style|none/line/bezel/rounded-rect
+background|image-named
+disabled-background|image-named
+clear-button-mode|never/while-editing/unless-editing/always
+left-view|view
+left-view-mode|never/while-editing/unless-editing/always
+right-view|view
+right-view-mode|never/while-editing/unless-editing/always
+input-view|view
+input-accessory-view|view
 
 ### text-view
 
-    `text-view` corresponds to UITextView in iOS and inherits from
-    `scroll`.
+`text-view` corresponds to UITextView in iOS and inherits from
+`scroll`.
 
-- text
-
-    The text displayed by the text view.
-
-- font
-
-    The font of the text.
-
-- text-color
-
-    The color of the text.
-
-- editable
-
-    A Boolean value indicating whether the receiver is editable.
-
-- data-detector-types
-
-    The types of data converted to clickable URLs in the text
-    view. Available types include:
-
-    1. none
-    2. phone-number
-    3. link
-    4. address
-    5. calendar-event
-    6. all
-
-- text-alignment
-
-    The technique to use for aligning the text. Available alignments
-    include:
-
-    1. left
-    2. center
-    3. right
-
-- selected-range
-
-    The current selection range of the receiver. A range value.
-
-- input-view
-
-    The custom input view to display when the text view becomes the
-    first responder. A view value.
-
-- input-accessory-view
-
-    The custom accessory view to display when the text view becomes
-    the first responder. A view value.
+Attribute|Type
+:-------|:------
+text|string
+font|font
+text-color|color
+editable|boolean
+data-detector-types|none/phone-number/link/address/calendar-event/all
+text-alignment|left/center/right
+selected-range|range
+input-view|view
+input-accessory-view|view
 
 Resources
 ---------
