@@ -72,27 +72,11 @@ of "self.view" to make sure it's a symbol.
 
 #### above
 
-    (above top bottom [ratio|margin])
+    (above top bottom ratio)
 
-There are three ways to use the `above` primitive.
-
-- `(above top bottom ratio)`
-
-    `above` will place `top` on the `bottom`, and occupy `ratio`
-    percent of area inherited from parent and `bottom` gets the rest
-    area. `ratio` is a float between 0.0 to 1.0 (excluding 0.0 and
-    1.0).
-
-- `(above top bottom margin)`
-
-    `above` will place `top` on the `bottom` too, and wrap it's real
-    height and `bottom` gets the rest area. There is a gap (`margin`)
-    between `top` and `bottom`. `margin` is a integer greater than 1.
-
-- `(above top bottom)`
-
-    Layout `top` and `bottom` as `(above top bottom margin)`, but no
-    gap this time.
+`above` will place `top` on the `bottom`, and occupy `ratio` percent
+of area inherited from parent and `bottom` gets the rest area. `ratio`
+is a float between 0.0 to 1.0 (excluding 0.0 and 1.0).
 
 Here is an example about `above`:
 
@@ -103,27 +87,41 @@ Here is an example about `above`:
 
 #### beside
 
-    (beside left right [ratio|margin])
+    (beside left right ratio)
 
-Like `above`, `beside` gets 3 ways to layout `left` and `right`.
+`beside` will place `left` on the left of `right`. `left` occupies
+`ratio` percenter of area inherited from parent and `right` gets the
+rest. `ratio` is a float between 0.0 and 1.0(excluding 0.0 and 1.0).
 
-- `(beside left right ratio)`
+### ^^
 
-    `beside` will place `left` on the left of `right`. `left` occupies
-    `ratio` percenter of area inherited from parent and `right` gets
-    the rest. `ratio` is a float between 0.0 and 1.0(excluding 0.0 and
-    1.0).
+    (^^ top bottom [margin])
 
-- `(beside left right margin)`
+`^^` will place `top` on the `bottom` and wrap it's real height and
+`bottom` gets the rest area. There may be a gap (`margin`) between
+`top` and `bottom`. `margin` is a integer greater than 1.
 
-    `beside` will place `left` on the left of `right` too, and wrap
-    it's real width and `right` gets the rest area. There is a
-    `margin` long gap between `left` and `right`. `margin` is a
-    integer greater than 1.
+### vv
 
-- `(beside left right)`
+    (vv top bottom [margin])
 
-    Same as `(beside left right margin)` without `margin`.
+`vv` acts as same as `^^` except that `top` gets the rest area
+inherited from parent.
+
+### <<
+
+    (<< left right [margin])
+
+`<<` will place `left` on the left of `right` and wrap it's real width
+and `right` gets the rest area inherited from parent. There may be a
+`margin` long gap between `left` and `right` if `margin` appears.
+
+### >>
+
+    (>> left right [margin])
+
+`>>` acts as same as `<<` except that `left` gets the rest area
+inherited from parent.
 
 ### Advanced Primitives
 
