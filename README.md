@@ -172,6 +172,20 @@ Each label gets 33% width of `self.view`.
 
 `vseq` is just like `hseq` but in vertical direction.
 
+#### h...
+
+    (h... children)
+
+`h...` works like `hseq` except that it bases on `^^`. That means
+children are layouted sequentially and each of them occupy their own
+size of area, not share the area inherited from parent averagely.
+
+#### v...
+
+    (v... children)
+
+`v...` works link `h...` but in vertical direction.
+
 Views
 -----
 

@@ -301,6 +301,24 @@
     (cons '>> (cons left (cons right margin))))
    (else (error "Wrong number of parameters in >>" left right margin))))
 
+(define (h... . views)
+  (define (hseq views)
+    (let ((head (car views))
+          (tail (cdr views)))
+      (if (= 1 (length views))
+          head
+          (<< head (hseq tail)))))
+  (hseq views))
+
+(define (v... . views)
+  (define (vseq views)
+    (let ((head (car views))
+          (tail (cdr views)))
+      (if (= 1 (length views))
+          head
+          (^^ head (vseq tail)))))
+  (vseq views))
+
 (define (above up low ratio)
   (list 'above up low ratio))
 
@@ -338,6 +356,8 @@
         (list '>> >>)
         (list '^^ ^^)
         (list 'vv vv)
+        (list 'h... h...)
+        (list 'v... v...)
         (list 'above above)
         (list 'beside beside)
         (list 'center center)
