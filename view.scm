@@ -518,6 +518,25 @@
 (define (generate-assign-data-detector-types var attr value)
   (string-append var "." attr " = " (generate-data-detector-type value) ";"))
 
+(define (generate-separator-style value)
+  (case value
+    ((single-line) "UITableViewCellSeparatorStyleSingleLine")
+    ((single-line-etched) "UITableViewCellSeparatorStyleSingleLineEtched")
+    (else "UITableViewCellSeparatorStyleNone")))
+
+(define (generate-assign-separator-style var attr value)
+  (string-append var "." attr " = " (generate-separator-style value) ";"))
+
+(define (generate-assign-data-source var attr value)
+  (if (symbol? value)
+      (string-append var "." attr " = " (symbol->string value) ";")
+      (error "Invalid data source type" value)))
+
+(define (generate-assign-delegate var attr value)
+  (if (symbol? value)
+      (string-append var "." attr " = " (symbol->string value) ";")
+      (error "Invalid delegate type" value)))
+
 (define the-view-attribute-generators
   (list (list 'background-color generate-assign-color "backgroundColor")
         (list 'hidden generate-assign-bool "hidden")
@@ -674,3 +693,21 @@
                 (list 'selected-range generate-assign-range "selectedRange")
                 (list 'input-view generate-assign-view-ref "inputView")
                 (list 'input-accessory-view generate-assign-view-ref "accessoryView"))))
+
+(define the-table-attribute-generators
+  (append the-scroll-attribute-generators
+          (list (list 'row-height generate-assign-float "rowHeight")
+                (list 'separator-style generate-assign-separator-style "separatorStyle")
+                (list 'separator-color generate-assign-color "separatorColor")
+                (list 'background-view generate-assign-view-ref "backgroundView")
+                (list 'table-header-view generate-assign-view-ref "tableHeaderView")
+                (list 'table-footer-view generate-assign-view-ref "tableFooterView")
+                (list 'section-header-height generate-assign-float "sectionHeaderHeight")
+                (list 'section-footer-height generate-assign-float "sectionFooterHeight")
+                (list 'section-index-minimum-display-row-count generate-assign-integer "sectionIndexMinimumDisplayRowCount")
+                (list 'allows-selection generate-assign-bool "allowsSelection")
+                (list 'allows-multiple-selection generate-assign-bool "allowsMultipleSelection")
+                (list 'allows-selection-during-editing generate-assign-bool "allowsSelectionDuringEditing")
+                (list 'allows-multiple-selection-during-editing generate-assign-bool "allowsMultipleSelectionDuringEditing")
+                (list 'data-source generate-assign-data-source "dataSource")
+                (list 'delegate generate-assign-delegate "delegate"))))

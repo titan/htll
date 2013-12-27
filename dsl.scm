@@ -99,7 +99,8 @@
         (cons 'slider (cons "UISlider" generate-normal-init))
         (cons 'segmented-control (cons "UISegmentedControl" generate-segmented-control-init))
         (cons 'text-field (cons "UITextField" generate-normal-init))
-        (cons 'text-view (cons "UITextView" generate-normal-init))))
+        (cons 'text-view (cons "UITextView" generate-normal-init))
+        (cons 'table (cons "UITableView" generate-normal-init))))
 
 (define (type-definition-type definition)
   (car definition))
@@ -157,6 +158,9 @@
 
 (define (text-view attrs)
   (list 'text-view attrs))
+
+(define (table attrs)
+  (list 'table attrs))
 
 (define (localized key default)
   (if (and (string? key) (string? default))
@@ -377,6 +381,7 @@
         (list 'segmented-control segmented-control)
         (list 'text-field text-field)
         (list 'text-view text-view)
+        (list 'table table)
         (list 'localized localized)
         (list 'hsba-color hsba-color)
         (list 'rgba-color rgba-color)
@@ -484,7 +489,8 @@
         (cons 'slider the-slider-attribute-generators)
         (cons 'segmented-control the-segmented-control-attribute-generators)
         (cons 'text-field the-text-field-attribute-generators)
-        (cons 'text-view the-text-view-attribute-generators)))
+        (cons 'text-view the-text-view-attribute-generators)
+        (cons 'table the-table-attribute-generators)))
 
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))

@@ -431,6 +431,28 @@ selected-range|range
 input-view|view
 input-accessory-view|view
 
+### table
+
+`table` corresponds to UITableView in iOS and inherits from `scroll`.
+
+Attribute|Type
+:-------|:------
+row-height|float
+separator-style|single-line/single-line-etched/none
+separator-color|color
+background-view|view
+table-header-view|view
+table-footer-view|view
+section-header-height|float
+section-footer-height|float
+section-index-minium-display-row-count|int
+allows-selection|boolean
+allows-multiple-selection|boolean
+allows-selection-during-editing|boolean
+allows-multiple-selection-during-editing|boolean
+data-source|ref
+delegate|ref
+
 Resources
 ---------
 
