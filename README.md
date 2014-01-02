@@ -32,7 +32,7 @@ home, can be deployed to /usr/local/bin/ easily.
 Sample
 ------
 
-There is an iOS5 [project]("https://github.com/titan/GearCalc") which
+There is an iOS5 [project](https://github.com/titan/GearCalc) which
 demonstrates how to write an iOS App with HTLL.
 
 Layout Primitives
@@ -307,7 +307,23 @@ shadow-offset|size
 ### button
 
 `button` corresponds to UIButton in iOS. It inherits from `control`
-and `view`.
+and `view`. There are 6 types of `button`, so there are 6 constructive
+function for `button`:
+
+1. `(custom-button attrs)`
+
+2. `(rounded-rect-button attrs)`
+
+3. `(detail-disclosure-button attrs)`
+
+4. `(info-light-button attrs)`
+
+5. `(info-dark-button attrs)`
+
+6. `(contact-add-button attrs)`
+
+In a normal case, we should use `(custom-button attrs)` function to
+create a button view.
 
 Attribute|Type
 :-------|:------
