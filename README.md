@@ -48,7 +48,13 @@ basic primitives, they are made for convenience.
 
 ### Top-Level Primitive
 
-There are only one primitive, `in`, in the top-level class.
+Top-level primitives are exclusive, there is only one top-level
+primitive in each scripts. HTLL won't check the restriction, so if
+there are at least two primitives appear in a script, the behavior of
+HTLL is uncertain.
+
+#### `in`
+The first primitive in the top-level class is `in`.
 
     (in child parent)
 
@@ -67,6 +73,21 @@ A hello world style HTLL source code looks like this:
 
 Attention, HTLL is a scheme-like language, so we need add `'` in front
 of "self.view" to make sure it's a symbol.
+
+#### `in-cell`
+
+The second top level primitive is `in-cell`, which is speical for
+table view. When `in-cell` appears in the script, HTLL assumes that
+layouting work will happen in a table cell named "cell".
+
+`child` is what we layout in a table cell.
+
+`parent` is where we layout in a table cell. Commonly, `parent` is
+"cell.contentView".
+
+Here is an example:
+
+    (in-cell (label '((text . "Hello World"))) 'cell.contentView)
 
 ### Basic Primitives
 

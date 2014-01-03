@@ -252,6 +252,10 @@
   (scan-variable-value parent the-current-environment)
   (set! the-layout-tree (cons (cons parent children) the-layout-tree)))
 
+(define (in-cell children parent)
+  (scan-variable-value parent the-current-environment)
+  (set! the-layout-tree (cons (cons parent children) the-layout-tree)))
+
 (define (view-type view)
   (car view))
 
@@ -356,6 +360,7 @@
 
 (define dsl-procedures
   (list (list 'in in)
+        (list 'in-cell in-cell)
         (list '<< <<)
         (list '>> >>)
         (list '^^ ^^)
@@ -816,6 +821,20 @@
   (display (string-append (symbol->string var) ".frame = (CGRect) {" (layout-eval x 0) ", " (layout-eval y 0) ", " (layout-eval width 0) ", " (layout-eval height 0) "};"))
   (newline))
 
+(define (frame-width f)
+  (caddr f))
+
+(define (frame-height f)
+  (cadddr f))
+
+(define (layout-^^ layout-fun root view x y width height gen?)
+  (let ((up (up-view view))
+        (low (low-view view))
+        (margin (view-margin view)))
+    (let* ((occupy1 (layout-fun root up x y width 0 gen?))
+           (occupy2 (layout-fun root low x `(+ ,y (+ ,margin ,(frame-height occupy1))) width (if (and (number? height) (= 0 height)) 0 `(- ,height (+ ,margin ,(frame-height occupy1)))) gen?)))
+      (list x y width `(+ (+ ,(frame-height occupy1) ,(frame-height occupy2)) ,margin)))))
+
 (define (generate-view-will-layout-subviews env)
   (define (layout-loop tree)
     (define (layout root view x y width height gen?)
@@ -825,12 +844,7 @@
         (cadddr f))
       (cond
        ((eq? '^^ (view-type view))
-        (let ((up (up-view view))
-              (low (low-view view))
-              (margin (view-margin view)))
-          (let* ((occupy1 (layout root up x y width 0 gen?))
-                 (occupy2 (layout root low x `(+ ,y (+ ,margin ,(frame-height occupy1))) width (if (and (number? height) (= 0 height)) 0 `(- ,height (+ ,margin ,(frame-height occupy1)))) gen?)))
-            (list x y width `(+ (+ ,(frame-height occupy1) ,(frame-height occupy2)) ,margin)))))
+        (layout-^^ layout root view x y width height gen?))
        ((eq? 'vv (view-type view))
         (let ((up (up-view view))
               (low (low-view view))
@@ -922,4 +936,27 @@
               (children (cdar tree)))
           (layout root children 0 0 (string->symbol (string-append rootstr ".bounds.size.width")) (string->symbol (string-append rootstr ".bounds.size.height")) #t)
           (layout-loop (cdr tree)))))
+  (layout-loop the-layout-tree))
+
+(define (generate-declaration-by-type-definition type var)
+  (display (string-append type " * " (symbol->string var) ";"))
+  (newline))
+
+(define (generate-cell-declaration env)
+  (let loop ((vars the-variables))
+    (if (not (null? vars))
+        (let ((definition (assq (view-type (cadar vars)) the-type-definitions)))
+          (if definition
+              (generate-declaration-by-type-definition (type-definition-type-string definition) (caar vars)))
+          (loop (cdr vars))))))
+
+(define (generate-cell-for-row-at-index-path env)
+  (define (layout-loop tree)
+    (define (layout root view x y width height gen?)
+      '())
+    (if (not (null? tree))
+        (let ((root (caar tree))
+              (rootstr (symbol->string (caar tree)))
+              (children (cadr tree)))
+          (layout root children 0 0 (string->symbol (string-append rootstr ".bounds.size.width")) (string->symbol (string-append rootstr ".bounds.size.height")) #t))))
   (layout-loop the-layout-tree))
