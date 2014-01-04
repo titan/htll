@@ -49,8 +49,8 @@
   (display "view-will-layout-subviews\t")
   (display "generate codes for the viewWillLayoutSubviews method")
   (newline)
-  (display "cell-declaration\t\t")
-  (display "generate variable declarations for the table cell")
+  (display "cell\t\t\t\t")
+  (display "generate render codes for the table cell")
   (newline))
 
 (define (main argv)
@@ -73,7 +73,7 @@
                            ((eq? action 'view-did-load) (generate-view-did-load the-global-environment))
                            ((eq? action 'view-will-appear) (generate-view-will-appear the-global-environment))
                            ((eq? action 'view-will-layout-subviews) (generate-view-will-layout-subviews the-global-environment))
-                           ((eq? action 'cell-declaration) (generate-cell-declaration the-global-environment))
+                           ((eq? action 'cell) (generate-cell the-global-environment))
                            ((eq? action 'eval) 'ok)
                            (else (display "Unknown action: ") (display action) (newline) (usage prog)))
                           (begin
