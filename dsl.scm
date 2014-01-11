@@ -142,10 +142,7 @@
   (list 'contact-add-button attrs))
 
 (define (image attrs)
-  (let ((ref (assq 'image attrs)))
-    (if ref
-        (list 'image attrs)
-        (error "Missing image" attrs))))
+  (list 'image attrs))
 
 (define (slider attrs)
   (list 'slider attrs))
