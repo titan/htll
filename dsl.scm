@@ -910,22 +910,33 @@
    (else
     (let ((type-definition (assq (view-type view) the-type-definitions)))
       (if type-definition
-          (let* ((var (lookup-variable-by-value view root))
-                 (w (if (and (number? width) (= 0 width)) (string->symbol (string-append (symbol->string var) ".bounds.size.width")) width))
-                 (h (if (and (number? height) (= 0 height)) (string->symbol (string-append (symbol->string var) ".bounds.size.height")) height)))
-            (if (or (and (number? width) (= 0 width)) (and (number? height) (= 0 height)))
-                (begin
-                  (display (string-append "[" (symbol->string var) " sizeToFit];"))
-                  (newline)
+          (let ((var (lookup-variable-by-value view root))
+                (size-attr (assq 'size (view-attributes view))))
+            (if size-attr
+                (let ((w (cadr size-attr))
+                      (h (caddr size-attr)))
                   (if gen?
-                      (generate-view-frame var x y w h)))
-                (if gen?
-                    (generate-view-frame var x y w h)))
-            (list
-             (string->symbol (string-append (symbol->string var) ".frame.origin.x"))
-             (string->symbol (string-append (symbol->string var) ".frame.origin.y"))
-             (string->symbol (string-append (symbol->string var) ".bounds.size.width"))
-             (string->symbol (string-append (symbol->string var) ".bounds.size.height"))))
+                      (generate-view-frame var x y w h))
+                  (list
+                   (string->symbol (string-append (symbol->string var) ".frame.origin.x"))
+                   (string->symbol (string-append (symbol->string var) ".frame.origin.y"))
+                   (string->symbol (string-append (symbol->string var) ".bounds.size.width"))
+                   (string->symbol (string-append (symbol->string var) ".bounds.size.height"))))
+                (let ((w (if (and (number? width) (= 0 width)) (string->symbol (string-append (symbol->string var) ".bounds.size.width")) width))
+                      (h (if (and (number? height) (= 0 height)) (string->symbol (string-append (symbol->string var) ".bounds.size.height")) height)))
+                  (if (or (and (number? width) (= 0 width)) (and (number? height) (= 0 height)))
+                      (begin
+                        (display (string-append "[" (symbol->string var) " sizeToFit];"))
+                        (newline)
+                        (if gen?
+                            (generate-view-frame var x y w h)))
+                      (if gen?
+                          (generate-view-frame var x y w h)))
+                  (list
+                   (string->symbol (string-append (symbol->string var) ".frame.origin.x"))
+                   (string->symbol (string-append (symbol->string var) ".frame.origin.y"))
+                   (string->symbol (string-append (symbol->string var) ".bounds.size.width"))
+                   (string->symbol (string-append (symbol->string var) ".bounds.size.height"))))))
           (list x y width height))))))
 
 (define (generate-view-will-layout-subviews env)
