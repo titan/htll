@@ -804,7 +804,7 @@
           (string-append "(" (layout-eval (cadr exp) 0) " + " (layout-eval (caddr exp) 0) ")")
           (string-append (layout-eval (cadr exp) 0) " + " (layout-eval (caddr exp) 0))))
      ((tagged-list? exp '-)
-      (if (> priority 1)
+      (if (>= priority 1)
           (string-append "(" (layout-eval (cadr exp) 1) " - " (layout-eval (caddr exp) 1) ")")
           (string-append (layout-eval (cadr exp) 1) " - " (layout-eval (caddr exp) 1))))
      ((tagged-list? exp '*)
