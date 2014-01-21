@@ -466,14 +466,16 @@
     (let loop ((attrs (view-attributes view)))
       (if (not (null? attrs))
           (let ((attr (car attrs)))
-            (let ((generator (assq (car attr) generators)))
-              (if generator
-                  (begin
-                    (if (caddr generator)
-                        (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
-                        (display ((cadr generator) (symbol->string var) (cdr attr))))
-                    (newline))
-                  (error "Invalid attribute" (car attr) "for" var)))
+            (if (eq? (car attr) 'size)
+                (loop (cdr attrs)) ; skip size attribute
+                (let ((generator (assq (car attr) generators)))
+                  (if generator
+                      (begin
+                        (if (caddr generator)
+                            (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
+                            (display ((cadr generator) (symbol->string var) (cdr attr))))
+                        (newline))
+                      (error "Invalid attribute" (car attr) "for" var))))
             (loop (cdr attrs)))))))
 
 (define the-attribute-generators
