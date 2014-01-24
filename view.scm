@@ -342,6 +342,49 @@
 (define (generate-assign-content-horizontal-alignment var attr value)
   (string-append var "." attr " = " (generate-content-horizontal-alignment value) ";"))
 
+(define (generate-control-event value)
+  (case value
+    ((touch-down) "UIControlEventTouchDown")
+    ((touch-down-repeat) "UIControlEventTouchDownRepeat")
+    ((touch-drag-inside) "UIControlEventTouchDragInside")
+    ((touch-drag-outside) "UIControlEventTouchDragOutside")
+    ((touch-drag-enter) "UIControlEventTouchDragEnter")
+    ((touch-drag-exit) "UIControlEventTouchDragExit")
+    ((touch-up-inside) "UIControlEventTouchUpInside")
+    ((touch-up-outside) "UIControlEventTouchUpOutside")
+    ((touch-cancel) "UIControlEventTouchCancel")
+    ((value-changed) "UIControlEventValueChanged")
+    ((editing-did-begin) "UIControlEventEditingDidBegin")
+    ((editing-changed) "UIControlEventEditingChanged")
+    ((editing-did-end) "UIControlEventEditingDidEnd")
+    ((editing-did-end-on-exit) "UIControlEventEditingDidEndOnExit")
+    ((all-touch-events) "UIControlEventAllTouchEvents")
+    ((all-editing-events) "UIControlEventAllEditingEvents")
+    ((application-reserved) "UIControlEventApplicationReserved")
+    ((system-reserved) "UIControlEventSystemReserved")
+    (else "UIControlEventAllEvents")))
+
+(define (generate-add-target var value)
+  (define (generate-events events)
+    (let loop ((events events)
+               (result #f))
+      (if (null? events)
+          result
+          (if result
+              (loop (cdr events) (string-append (generate-control-event (car events)) "|" result))
+              (loop (cdr events) (generate-control-event (car events)))))))
+  (if (and (list? value) (= (length value) 3))
+      (let ((target (car value))
+            (action (cadr value))
+            (events (caddr value)))
+        (if (list? events)
+            (let ((events-code (generate-events events)))
+              (if events-code
+                  (string-append "[" var " addTarget:" (symbol->string target) " action:" (symbol->string action) " forControlEvents:" events-code "];")
+                  (error (string-append "Invalid data type for [" var " addTarget:action:forControlEvents:") value)))
+            (string-append "[" var " addTarget:" (symbol->string target) " action:@selector(" (symbol->string action) ") forControlEvents:" (generate-control-event events) "];")))
+      (error (string-append "Invalid data type for [" var " addTarget:action:forControlEvents:") value)))
+
 (define (generate-assign-indicator-style var attr value)
   (string-append var "." attr " = " (generate-scroll-indicator-style value) ";"))
 
@@ -708,6 +751,23 @@
                 (list 'allows-selection generate-assign-bool "allowsSelection")
                 (list 'allows-multiple-selection generate-assign-bool "allowsMultipleSelection")
                 (list 'allows-selection-during-editing generate-assign-bool "allowsSelectionDuringEditing")
-                (list 'allows-multiple-selection-during-editing generate-assign-bool "allowsMultipleSelectionDuringEditing")
-                (list 'data-source generate-assign-data-source "dataSource")
-                (list 'delegate generate-assign-delegate "delegate"))))
+                (list 'allows-multiple-selection-during-editing generate-assign-bool "allowsMultipleSelectionDuringEditing"))))
+
+(define the-control-init-attribute-generators
+  (list (list 'target generate-add-target #f)))
+
+(define the-button-init-attribute-generators
+  the-control-init-attribute-generators)
+
+(define the-slider-init-attribute-generators
+  the-control-init-attribute-generators)
+
+(define the-segmented-control-init-attribute-generators
+  the-control-init-attribute-generators)
+
+(define the-text-field-init-attribute-generators
+  the-control-init-attribute-generators)
+
+(define the-table-init-attribute-generators
+  (list (list 'data-source generate-assign-data-source "dataSource")
+        (list 'delegate generate-assign-delegate "delegate")))

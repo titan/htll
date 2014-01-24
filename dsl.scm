@@ -439,6 +439,18 @@
           (generate (caar vars))
           (loop (cdr vars))))))
 
+(define the-init-attribute-generators
+  (list (cons 'custom-button the-button-init-attribute-generators)
+        (cons 'rounded-rect-button the-button-init-attribute-generators)
+        (cons 'detail-disclosure-button the-button-init-attribute-generators)
+        (cons 'info-light-button the-button-init-attribute-generators)
+        (cons 'info-dark-button the-button-init-attribute-generators)
+        (cons 'contact-add-button the-button-init-attribute-generators)
+        (cons 'slider the-slider-init-attribute-generators)
+        (cons 'segmented-control the-segmented-control-init-attribute-generators)
+        (cons 'text-field the-text-field-init-attribute-generators)
+        (cons 'table the-table-init-attribute-generators)))
+
 (define (generate-view-did-load env)
   (define (generate type type-string init-fun root var view)
     (display (string-append (symbol->string var) " = " (init-fun type-string view) ";"))
@@ -448,6 +460,25 @@
           (begin
             (display (string-append "[" (symbol->string root) " addSubview:" (symbol->string var) "];"))
             (newline)))))
+  (define (generate-init-attributes var view)
+    (let* ((type (view-type view))
+           (generators (assq type the-init-attribute-generators)))
+      (if generators
+          (let loop ((attrs (view-attributes view))
+                     (result ""))
+            (if (null? attrs)
+                result
+                (loop (cdr attrs)
+                      (string-append
+                       result
+                       (let* ((attr (car attrs))
+                              (generator (assq (car attr) (cdr generators))))
+                         (if generator
+                             (if (caddr generator)
+                                 (string-append ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)) "\n")
+                                 (string-append ((cadr generator) (symbol->string var) (cdr attr)) "\n"))
+                             ""))))))
+          "")))
   (let loop ((vars the-variables))
     (if (not (null? vars))
         (let ((definition (assq (view-type (cadar vars)) the-type-definitions)))
@@ -458,25 +489,33 @@
                     (root (cddar vars))
                     (var (caar vars))
                     (view (cadar vars)))
-                (generate type type-string init-fun root var view)))
+                (generate type type-string init-fun root var view)
+                (display (generate-init-attributes var view))))
           (loop (cdr vars))))))
 
-(define (generate-view-attributes generators var view)
-  (let ((varstr (symbol->string var)))
-    (let loop ((attrs (view-attributes view)))
-      (if (not (null? attrs))
+(define (generate-view-attributes var view)
+  (let* ((type (view-type view))
+         (generators (assq type the-attribute-generators))
+         (init-generators (assq type the-init-attribute-generators))
+         (varstr (symbol->string var)))
+    (let loop ((attrs (view-attributes view))
+               (result ""))
+      (if (null? attrs)
+          result
           (let ((attr (car attrs)))
             (if (eq? (car attr) 'size)
-                (loop (cdr attrs)) ; skip size attribute
-                (let ((generator (assq (car attr) generators)))
-                  (if generator
-                      (begin
-                        (if (caddr generator)
-                            (display ((cadr generator) (symbol->string var) (caddr generator) (cdr attr)))
-                            (display ((cadr generator) (symbol->string var) (cdr attr))))
-                        (newline))
-                      (error "Invalid attribute" (car attr) "for" var))))
-            (loop (cdr attrs)))))))
+                (loop (cdr attrs) result) ; skip size attribute
+                (let ((generator (if generators (assq (car attr) (cdr generators)) #f))
+                      (init-generator (if init-generators (assq (car attr) (cdr init-generators)) #f)))
+                  (cond
+                   (generator
+                    (loop (cdr attrs)
+                          (string-append result
+                                         (if (caddr generator)
+                                             (string-append ((cadr generator) varstr (caddr generator) (cdr attr)) "\n")
+                                             (string-append ((cadr generator) varstr (cdr attr)) "\n")))))
+                   (init-generator (loop (cdr attrs) result))
+                   (else (error "Invalid attribute" (car attr) "for" var))))))))))
 
 (define the-attribute-generators
   (list (cons 'view the-view-attribute-generators)
@@ -498,9 +537,9 @@
 (define (generate-view-will-appear env)
   (let loop ((vars the-variables))
     (if (not (null? vars))
-        (let ((generators (assq (view-type (cadar vars)) the-attribute-generators)))
-          (if generators
-              (generate-view-attributes (cdr generators) (caar vars) (cadar vars)))
+        (let ((var (caar vars))
+              (view (cadar vars)))
+          (display (generate-view-attributes var view))
           (loop (cdr vars))))))
 
 (define (exp-optimizer exp)
@@ -1013,11 +1052,9 @@
                     (init-fun (type-definition-init-fun definition))
                     (root (cddar vars))
                     (var (caar vars))
-                    (view (cadar vars))
-                    (generators (assq (view-type (cadar vars)) the-attribute-generators)))
+                    (view (cadar vars)))
                 (generate-init type type-string init-fun root var view counter)
-                (if generators
-                    (generate-view-attributes (cdr generators) var view))))
+                (display (generate-view-attributes var view))))
           (loop (cdr vars) (+ counter 1))))))
 
 (define (generate-cell-init env)
