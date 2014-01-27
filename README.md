@@ -238,6 +238,29 @@ selected|boolean
 highlighted|boolean
 content-vertical-alignment|center/top/bottom/fill
 content-horizontal-alignment|center/left/right/fill
+target|(list target selector event/(list events))
+
+Available control events include:
+
+- touch-down
+- touch-down-repeat
+- touch-drag-inside
+- touch-drag-outside
+- touch-drag-enter
+- touch-drag-exit
+- touch-up-inside
+- touch-up-outside
+- touch-cancel
+- value-changed
+- editing-did-begin
+- editing-changed
+- editing-did-end
+- editing-did-end-on-exit
+- all-touch-events
+- all-editing-events
+- application-reserved
+- system-reserved
+- all-events
 
 ### view
 
