@@ -3,7 +3,7 @@
 
 (define the-global-environment (setup-dsl-environment (setup-environment)))
 
-(define ios-version 'ios5)
+(define ios-version 'ios6)
 
 (define (parse-file in)
   (let loop ((datum (read in))
@@ -27,9 +27,7 @@
   (newline)
   (display "-v\t\tgenerate codes for iOS?")
   (newline)
-  (display "  ios5\t\t(default)")
-  (newline)
-  (display "  ios6")
+  (display "  ios6\t\t(default)")
   (newline)
   (newline)
   (display "Actions: ")
@@ -87,8 +85,6 @@
                 (cond
                  ((and (equal? arg "-v") (> (length args) 1))
                   (cond
-                   ((equal? (cadr args) "ios5")
-                    (loop (cddr args) 'ios5 action file))
                    ((equal? (cadr args) "ios6")
                     (loop (cddr args) 'ios6 action file))
                    (else (usage prog))))

@@ -641,6 +641,6 @@ resulting object.
 Further Work
 ------------
 
-1. Support iOS5, iOS6 and iOS7
+1. Support iOS6 and iOS7
 2. Research more effective layout method
 3. Support more view type

@@ -390,17 +390,11 @@
 
 (define (generate-text-alignment value)
   (if (symbol? value)
-      (if (eq? ios-version 'ios5)
-          (case value
-            ((left) "UITextAlignmentLeft")
-            ((center) "UITextAlignmentCenter")
-            ((right) "UITextAlignmentRight")
-            (else (error "Unknown text alignment" value)))
-          (case value
-            ((left) "NSTextAlignmentLeft")
-            ((center) "NSTextAlignmentCenter")
-            ((right) "NSTextAlignmentRight")
-            (else (error "Unknown text alignment" value))))
+      (case value
+        ((left) "NSTextAlignmentLeft")
+        ((center) "NSTextAlignmentCenter")
+        ((right) "NSTextAlignmentRight")
+        (else (error "Unknown text alignment" value)))
       (error "Unknown text alignment" value)))
 
 (define (generate-assign-text-alignment var attr value)
@@ -408,23 +402,14 @@
 
 (define (generate-link-break-mode value)
   (if (symbol? value)
-      (if (eq? ios-version 'ios5)
-          (case value
-            ((word-wrap) "UILineBreakModeWordWrap")
-            ((character-wrap) "UILineBreakModeCharacterWrap")
-            ((clip) "UILineBreakModeClip")
-            ((head-truncation) "UILineBreakModeHeadTruncation")
-            ((tail-truncation) "UILineBreakModeTailTruncation")
-            ((middle-truncation) "UILineBreakModeMiddleTruncation")
-            (else (error "Invalid link break mode" value)))
-          (case value
-            ((word-wrap) "NSLineBreakModeWordWrap")
-            ((character-wrap) "NSLineBreakModeCharacterWrap")
-            ((clip) "NSLineBreakModeClip")
-            ((head-truncation) "NSLineBreakModeHeadTruncation")
-            ((tail-truncation) "NSLineBreakModeTailTruncation")
-            ((middle-truncation) "NSLineBreakModeMiddleTruncation")
-            (else (error "Invalid link break mode" value))))
+      (case value
+        ((word-wrap) "NSLineBreakModeWordWrap")
+        ((character-wrap) "NSLineBreakModeCharacterWrap")
+        ((clip) "NSLineBreakModeClip")
+        ((head-truncation) "NSLineBreakModeHeadTruncation")
+        ((tail-truncation) "NSLineBreakModeTailTruncation")
+        ((middle-truncation) "NSLineBreakModeMiddleTruncation")
+        (else (error "Invalid link break mode" value)))
       (error "Invalid link break mode" value)))
 
 (define (generate-assign-line-break-mode var attr value)
